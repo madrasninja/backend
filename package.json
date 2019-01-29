@@ -1,0 +1,33 @@
+{
+  "name": "madrasninja",
+  "version": "1.0.0",
+  "description": "Book the housekeeping service in online at the hourly rate",
+  "main": "index.js",
+  "scripts": {
+    "start": "node application/app.js start",
+    "test": "madrasninja"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/madrasninja/backend.git"
+  },
+  "keywords": [
+    "nodejs",
+    "mongo"
+  ],
+  "author": "karthisgk",
+  "license": "ISC",
+  "dependencies": {
+    "body-parser": "^1.18.3",
+    "ejs": "^2.5.7",
+    "express": "^4.16.2",
+    "express-session": "^1.15.6",
+    "mongodb": "^2.2.36",
+    "socket.io": "^2.2.0"
+  },
+  "private": true,
+  "bugs": {
+    "url": "https://github.com/madrasninja/backend/issues"
+  },
+  "homepage": "https://madrasninja.netlify.com/"
+}
