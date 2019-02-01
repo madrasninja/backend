@@ -16,7 +16,7 @@ function Routes(app){
 	});
 	self.r = app;
 
-	app.post('/on_booking', Booking.onBooking);
+	app.get('/on_booking', Booking.onBooking);
 
 	app.post('/on_submit_booking', Booking.onSubmitBooking);
 
