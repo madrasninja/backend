@@ -1,7 +1,10 @@
 
+require('Booking.js');
+
 function Routes(app){
 	var self = this;
 	self.db = require('../config').db;
+	const Booking = new Booking(self.db);
 	app.get('/', function(req, res) {
 		self.db.get('settings', {}, function(data){
 			if(data.length == 1)
@@ -12,6 +15,12 @@ function Routes(app){
 		});
 	});
 	self.r = app;
+
+	app.post('/on_booking', Booking.onBooking);
+
+	app.post('/on_submit_booking', Booking.onSubmitBooking);
+
+	app.post('/on_payment_finished', Booking.onPaymentFinished);
 }
 
 module.exports = Routes;

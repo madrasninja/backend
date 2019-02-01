@@ -69,11 +69,17 @@ db.createCollection("status", {
    validator: {
       $jsonSchema: {
          bsonType: "object",
-         required: [ "name" ],
+         required: [ "name","ID" ],
          properties: {
             name: {
                bsonType: "string",
                description: "must be a string and is required"
+            }
+         },
+         properties: {
+            ID: {
+               bsonType: "number",
+               description: "must be a numeric and is required"
             }
          }
       }
@@ -111,11 +117,11 @@ db.createCollection("service_type", {
 })
 
 const statusData = [
-   {name: 'New'},
-   {name: 'Processing'},
-   {name: 'Request Assigned'},
-   {name: 'Work In-Progress'},
-   {name: 'Completed'}
+   {ID: 0, name: 'New'},
+   {ID: 1, name: 'Processing'},
+   {ID: 2, name: 'Request Assigned'},
+   {ID: 3, name: 'Work In-Progress'},
+   {ID: 4, name: 'Completed'}
 ];
 
 const service_typeData = [
