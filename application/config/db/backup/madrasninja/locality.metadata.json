@@ -1,0 +1,1 @@
+{"options":{"validator":{"$jsonSchema":{"bsonType":"object","required":["name"],"properties":{"name":{"bsonType":"string","description":"must be a string and is required"}}}}},"indexes":[{"v":2,"key":{"_id":1},"name":"_id_","ns":"madrasninja.locality"}],"uuid":"ece8d110ee4f4ae4bce98d08cbad0114"}
