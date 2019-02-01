@@ -1,10 +1,10 @@
 
-require('Booking.js');
+var Booking = require('./Booking.js');
 
 function Routes(app){
 	var self = this;
 	self.db = require('../config').db;
-	const Booking = new Booking(self.db);
+	Booking = new Booking(self.db);
 	app.get('/', function(req, res) {
 		self.db.get('settings', {}, function(data){
 			if(data.length == 1)

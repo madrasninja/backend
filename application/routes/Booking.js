@@ -87,3 +87,5 @@ const Booking = function(db) {
 		});
 	};
 };
+
+ module.exports = Booking;
