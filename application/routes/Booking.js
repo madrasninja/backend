@@ -1,4 +1,4 @@
-
+var ObjectId = require('mongodb').ObjectId;
 const Booking = function(db) {
 	var self = this;
 	self.db = db;
@@ -34,13 +34,13 @@ const Booking = function(db) {
 				Locality_ID: req.body.Locality_ID,
 				Service_Type_ID: req.body.Service_Type_ID,
 				Address: typeof req.body.Address != 'undefined' ? req.body.Address : '',
-				Status_ID: 0,
+				Status_ID: '0',
 				Payment_Status: 0,
+				Payment_Details: {},
 				Labour_ID: [],
 				Session_Time: req.body.Session_Time
 			};
-			if(typeof req.body.Payment_Details !='undefined')
-				insertData.Payment_Details = req.body.Payment_Details;
+			insertData = JSON.parse(JSON.stringify(insertData));
 			self.db.insert('booking', insertData, (err, result) => {
 				if(result.insertedCount == 1){
 					res.json({
@@ -65,7 +65,7 @@ const Booking = function(db) {
 							req.body.Alternate_Mobile_Number : '',					
 					User_Type: 3
 				};
-				this.createCustomer(newUser, afterUserFetched);
+				self.createCustomer(newUser, afterUserFetched);
 			}else
 				afterUserFetched(user[0]._id);
 		});
@@ -82,8 +82,11 @@ const Booking = function(db) {
 			Payment_Status = 2;
 		else if(req.body.Payment_Response == 'failed')
 			Payment_Status = 3;
-		self.db.update('booking', {_id: Booking_ID}, {Payment_Status: Payment_Status}, (err, result) => {
-			res.json({response: 'success', message: 'Payment SuccessFull'});
+		var UPD = {Payment_Status: Payment_Status};
+		if(typeof req.body.Payment_Details !='undefined')
+				UPD.Payment_Details = req.body.Payment_Details;
+		self.db.update('booking', {_id: new ObjectId(req.body.Booking_ID)}, UPD, (err, result) => {
+			res.json({response: 'success', message: 'Payment SuccessFull', result: result});
 		});
 	};
 };
