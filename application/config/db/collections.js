@@ -133,4 +133,13 @@ const service_typeData = [
    {name: 'Marble Polishing'}
 ];
 
-const localityData = [];
+const localityData = [
+   {name: "Ashok Nagar"},
+   {name: "Vadapalani"},
+   {name: "Valasaravakkam"},
+   {name: "Saligramam"},
+   {name: "KK Nagar"},
+   {name: "Velachery"},
+   {name: "Guindy"},
+   {name: "Alandhur"}
+];

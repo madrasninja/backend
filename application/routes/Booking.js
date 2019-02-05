@@ -3,14 +3,7 @@ const Booking = function(db) {
 	var self = this;
 	self.db = db;
 	this.onBooking = function(req, res){
-		var rtrn = {};
-		self.db.get('locality', {}, locality => {
-			rtrn.locality = locality;
-			self.db.get('service_type', {}, service_type => {
-				rtrn.service_type = service_type;
-				res.json(rtrn);
-			});
-		});
+		
 	};
 	this.createCustomer = function(user, cb){
 		self.db.insert('user', user, (err, result) => {
