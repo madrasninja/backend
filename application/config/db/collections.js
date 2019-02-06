@@ -30,7 +30,7 @@ db.createCollection("booking", {
    validator: {
       $jsonSchema: {
          bsonType: "object",
-         required: [ "User_ID", "Locality_ID", "Service_Type_ID", "Status_ID", "Payment_Status", "Session_Time.From","Session_Time.To" ],
+         required: [ "User_ID", "Locality_ID", "Address", "Service_Type_ID", "Status_ID", "Payment_Status", "Session_Time.From","Session_Time.To" ],
          properties: {
             User_ID: {
                bsonType: "string",
@@ -39,6 +39,10 @@ db.createCollection("booking", {
             Locality_ID: {
                bsonType: "string",
                description: "must be a string and is required"
+            },
+            Address: {
+               bsonType: "string",
+               description: "must be string and is required"
             },
             Service_Type_ID: {
                bsonType: "string",

@@ -14,19 +14,28 @@ const Booking = function(db) {
 
 		if(typeof req.body.Mobile_Number == 'undefined' || 
 			typeof req.body.First_Name == 'undefined' ||
-			typeof req.body.Email_Id == 'undefined'){
+			typeof req.body.Email_Id == 'undefined' ||
+			typeof req.body.Locality_ID == 'undefined' ||
+			typeof req.body.Service_Type_ID == 'undefined' ||
+			typeof req.body.Address == 'undefined' ||
+			typeof req.body.Session_Time != 'object'){
 			res.json({response: 'error', message: 'Wrong Input'});
 			return;
 		}
 
+		if(typeof req.body.Session_Time.From == 'undefined' ||
+			typeof req.body.Session_Time.To == 'undefined'){
+			res.json({response: 'error', message: 'Session Time From & To is Required'});
+			return;
+		}
+
 		var afterUserFetched = (User_ID) => {
-			req.body.Status_ID = 0;
-			req.body.Payment_Status = 0;
+
 			var insertData = {
 				User_ID: User_ID,
 				Locality_ID: req.body.Locality_ID,
 				Service_Type_ID: req.body.Service_Type_ID,
-				Address: typeof req.body.Address != 'undefined' ? req.body.Address : '',
+				Address: req.body.Address,
 				Status_ID: '0',
 				Payment_Status: 0,
 				Payment_Details: {},
