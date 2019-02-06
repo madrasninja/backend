@@ -30,9 +30,9 @@ function Routes(app){
 
 	/*app.get('/on_booking', Booking.onBooking);*/
 
-	app.post('/on_submit_booking', Booking.onSubmitBooking);
+	app.post('/bookservice', Booking.onSubmitBooking);
 
-	app.post('/on_payment_finished', Booking.onPaymentFinished);
+	app.post('/proceedforpayment', Booking.onPaymentFinished);
 }
 
 module.exports = Routes;
