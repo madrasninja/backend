@@ -1,12 +1,15 @@
 var ObjectId = require('mongodb').ObjectId;
-var smtp = require('./SMTPmailConfig.js');
+var config = require('../config/index.js');
 
-const Booking = function(db) {
+const Booking = function() {	
 	var self = this;
-	self.db = db;
+	self.db = config.db;
+	config.setSMTPConfig((smtp) => {
+		this.smtp = smtp;
+	});
 	this.onBooking = function(req, res){
 		
-	};
+	};	
 	this.createCustomer = function(user, cb){
 		self.db.insert('user', user, (err, result) => {
 	    	cb(result.insertedId);
@@ -80,10 +83,8 @@ const Booking = function(db) {
 			return;
 		}
 		var Payment_Status = 0;
-		if(req.body.Payment_Response == 'success'){
+		if(req.body.Payment_Response == 'success')
 			Payment_Status = 1;
-			self.sendEmailToAdmin();
-		}
 		else if(req.body.Payment_Response == 'cancel')
 			Payment_Status = 2;
 		else if(req.body.Payment_Response == 'failed')
@@ -92,11 +93,35 @@ const Booking = function(db) {
 		if(typeof req.body.Payment_Details !='undefined')
 				UPD.Payment_Details = req.body.Payment_Details;
 		self.db.update('booking', {_id: new ObjectId(req.body.Booking_ID)}, UPD, (err, result) => {
-			res.json({response: 'success', message: 'Payment SuccessFull', result: result});
+			var message = '';
+			if(Payment_Status == 1){
+				message = 'Payment SuccessFull';
+				self.sendEmailToAdmin();
+			}
+			else if(Payment_Status == 2)
+				message = 'Payment Cancelled';
+			else if(Payment_Status == 3)
+				message = 'Payment Failed';
+			res.json({response: 'success', message: message, result: result});
 		});
-	};
+	};	
 	this.sendEmailToAdmin = function(){
-
+		self.db.get('settings', {}, (settings) => {
+			var title = settings.length > 0 ? settings[0].title : '';
+			var adminMail = settings.length > 0 ?
+				settings[0].smtp_config.auth.user : config.smtp_config.auth.user;
+			self.smtp.getFile({title: title}, (d) => {
+				var mail = {
+				    from: adminMail,
+				    to: "karthisg.sg@gmail.com",
+				    subject: "New Booking Service",
+				    html: d.html
+				};
+				self.smtp.sendMail(mail, (err, res) => {
+					
+				});
+			});
+		});
 	};
 };
 
