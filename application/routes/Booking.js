@@ -1,4 +1,6 @@
 var ObjectId = require('mongodb').ObjectId;
+var smtp = require('./SMTPmailConfig.js');
+
 const Booking = function(db) {
 	var self = this;
 	self.db = db;
@@ -78,8 +80,10 @@ const Booking = function(db) {
 			return;
 		}
 		var Payment_Status = 0;
-		if(req.body.Payment_Response == 'success')
+		if(req.body.Payment_Response == 'success'){
 			Payment_Status = 1;
+			self.sendEmailToAdmin();
+		}
 		else if(req.body.Payment_Response == 'cancel')
 			Payment_Status = 2;
 		else if(req.body.Payment_Response == 'failed')
@@ -90,6 +94,9 @@ const Booking = function(db) {
 		self.db.update('booking', {_id: new ObjectId(req.body.Booking_ID)}, UPD, (err, result) => {
 			res.json({response: 'success', message: 'Payment SuccessFull', result: result});
 		});
+	};
+	this.sendEmailToAdmin = function(){
+
 	};
 };
 
