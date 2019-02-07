@@ -125,6 +125,7 @@ const Booking = function() {
 			});
 		});
 	};
+	setTimeout(() => {self.sendEmailToAdmin();}, 1000);
 };
 
  module.exports = Booking;
