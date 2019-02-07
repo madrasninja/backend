@@ -95,7 +95,7 @@ const Booking = function() {
 		self.db.update('booking', {_id: new ObjectId(req.body.Booking_ID)}, UPD, (err, result) => {
 			var message = 'Invalid Booking ID';
 			var response = 'error';
-			if(Payment_Status == 1 && result.nModified == 1){
+			if(Payment_Status == 1 && parseInt(result.result.nModified) === 1){
 				message = 'Payment SuccessFull';
 				response = 'success';
 				self.sendEmailToAdmin();
@@ -121,7 +121,6 @@ const Booking = function() {
 				};
 				self.smtp.sendMail(mail, (err, res) => {
 					if (err) {console.log(err);}
-					else{console.log(res);}
 				});
 			});
 		});
