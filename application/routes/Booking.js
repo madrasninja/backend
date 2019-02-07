@@ -121,6 +121,7 @@ const Booking = function() {
 				};
 				self.smtp.sendMail(mail, (err, res) => {
 					if (err) {console.log(err);}
+					else{console.log(res);}
 				});
 			});
 		});
