@@ -93,16 +93,18 @@ const Booking = function() {
 		if(typeof req.body.Payment_Details !='undefined')
 				UPD.Payment_Details = req.body.Payment_Details;
 		self.db.update('booking', {_id: new ObjectId(req.body.Booking_ID)}, UPD, (err, result) => {
-			var message = '';
-			if(Payment_Status == 1){
+			var message = 'Invalid Booking ID';
+			var response = 'error';
+			if(Payment_Status == 1 && result.nModified == 1){
 				message = 'Payment SuccessFull';
+				response = 'success';
 				self.sendEmailToAdmin();
 			}
 			else if(Payment_Status == 2)
 				message = 'Payment Cancelled';
 			else if(Payment_Status == 3)
 				message = 'Payment Failed';
-			res.json({response: 'success', message: message, result: result});
+			res.json({response: response, message: message, result: result});
 		});
 	};	
 	this.sendEmailToAdmin = function(){
@@ -118,7 +120,7 @@ const Booking = function() {
 				    html: d.html
 				};
 				self.smtp.sendMail(mail, (err, res) => {
-					
+					if (err) {console.log(err);}
 				});
 			});
 		});
