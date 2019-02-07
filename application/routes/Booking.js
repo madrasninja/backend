@@ -115,7 +115,7 @@ const Booking = function() {
 			self.smtp.getFile({title: title}, (d) => {
 				var mail = {
 				    from: adminMail,
-				    to: "karthisg.sg@gmail.com",
+				    to: "madrasninja@gmail.com",
 				    subject: "New Booking Service",
 				    html: d.html
 				};
