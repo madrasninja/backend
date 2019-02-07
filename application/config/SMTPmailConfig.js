@@ -42,7 +42,8 @@ function SMTP(config){
 	configuration reference:
 		https://www.arclab.com/en/kb/email/how-to-enable-imap-pop3-smtp-gmail-account.html
 	gmail permission
-		https://www.google.com/settings/security/lesssecureapps
+		https://www.google.com/settings/security/lesssecureapps,
+		https://accounts.google.com/DisplayUnlockCaptcha
 */
 
 /*{
