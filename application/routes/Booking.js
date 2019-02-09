@@ -1,5 +1,6 @@
 var ObjectId = require('mongodb').ObjectId;
 var config = require('../config/index.js');
+var common = require('../public/common.js');
 
 const Booking = function() {	
 	var self = this;
@@ -37,6 +38,7 @@ const Booking = function() {
 		var afterUserFetched = (User_ID) => {
 
 			var insertData = {
+				ID: 'MNS' + common.uniqueid(),
 				User_ID: User_ID,
 				Locality_ID: req.body.Locality_ID,
 				Service_Type_ID: req.body.Service_Type_ID,
@@ -50,10 +52,11 @@ const Booking = function() {
 			insertData = JSON.parse(JSON.stringify(insertData));
 			self.db.insert('booking', insertData, (err, result) => {
 				if(result.insertedCount == 1){
+					self.sendEmailToUser(insertData.ID, req.body.Email_Id);
 					res.json({
 						response: 'success',
 						message: 'Booking Data\'s Saved and Idle For Payment Response',
-						Booking_ID: result.insertedId
+						Booking_ID: insertData.ID
 					});
 				}
 				else
@@ -67,7 +70,7 @@ const Booking = function() {
 					First_Name: req.body.First_Name,
 					Last_Name: typeof req.body.Last_Name != 'undefined' ? req.body.Last_Name : '',
 					Mobile_Number: req.body.Mobile_Number,
-					Email_Id: req.body.Mobile_Number,
+					Email_Id: req.body.Email_Id,
 					Alternate_Mobile_Number: typeof req.body.Alternate_Mobile_Number != 'undefined' ?
 							req.body.Alternate_Mobile_Number : '',					
 					User_Type: 3
@@ -92,13 +95,13 @@ const Booking = function() {
 		var UPD = {Payment_Status: Payment_Status};
 		if(typeof req.body.Payment_Details !='undefined')
 				UPD.Payment_Details = req.body.Payment_Details;
-		self.db.update('booking', {_id: new ObjectId(req.body.Booking_ID)}, UPD, (err, result) => {
+		self.db.update('booking', {ID: req.body.Booking_ID}, UPD, (err, result) => {
 			var message = 'Invalid Booking ID';
 			var response = 'error';
 			if(Payment_Status == 1 && parseInt(result.result.nModified) === 1){
 				message = 'Payment SuccessFull';
 				response = 'success';
-				self.sendEmailToAdmin();
+				/*self.sendEmailToUser(req.body.Booking_ID);*/
 			}
 			else if(Payment_Status == 2)
 				message = 'Payment Cancelled';
@@ -107,22 +110,52 @@ const Booking = function() {
 			res.json({response: response, message: message, result: result});
 		});
 	};	
-	this.sendEmailToAdmin = function(){
-		self.db.get('settings', {}, (settings) => {
+	this.sendEmailToUser = function(BID, UEmail){
+
+		var hitSend = (settings, TO, isAdmin) => {
 			var title = settings.length > 0 ? settings[0].title : '';
 			var adminMail = settings.length > 0 ?
 				settings[0].smtp_config.auth.user : config.smtp_config.auth.user;
-			self.smtp.getFile({title: title}, (d) => {
+			var content = isAdmin ? '<h3>Customer needs a ninja</h3>' : '<h3>Your order has been placed</h3>';
+			content += '<h1>Booking ID: ' + BID + '</h1><br>';
+			content += isAdmin ? '<p>Click here to assign a ninja for the above booking</p>' : '<p>You will get the further details shortly</p>'; 
+			content += '<p>Thanks</p><p>Madras Ninja Bot</p>';
+			self.smtp.getFile({title: title, content: content}, (d) => {
 				var mail = {
 				    from: adminMail,
-				    to: "madrasninja@gmail.com",
-				    subject: "New Booking Service",
+				    to: TO,
+				    subject: isAdmin ? "New Service Request" : "Madras Ninja - New Service Request",
 				    html: d.html
 				};
 				self.smtp.sendMail(mail, (err, res) => {
 					if (err) {console.log(err);}
 				});
 			});
+		};
+
+		self.db.get('settings', {}, (settings) => {
+			self.getAdmins((emailIDS) => {
+				hitSend(settings, emailIDS, true);
+			});
+			hitSend(settings, UEmail, false);
+		});
+
+	};
+	this.getAdmins = function(cb){
+		var cond = {
+			$or: [
+				{User_Type: 0},
+				{User_Type: 1}
+			]
+		};
+		var emailIDS = [];
+		self.db.get('user', cond, (user) => {
+			if(user.length > 0){
+				user.forEach((u,  ind) => {
+					emailIDS.push(u.Email_Id);
+				});
+			}
+			cb(emailIDS);
 		});
 	};
 };

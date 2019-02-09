@@ -30,8 +30,12 @@ db.createCollection("booking", {
    validator: {
       $jsonSchema: {
          bsonType: "object",
-         required: [ "User_ID", "Locality_ID", "Address", "Service_Type_ID", "Status_ID", "Payment_Status", "Session_Time.From","Session_Time.To" ],
+         required: [ "ID", "User_ID", "Locality_ID", "Address", "Service_Type_ID", "Status_ID", "Payment_Status", "Session_Time.From","Session_Time.To" ],
          properties: {
+            ID: {
+               bsonType: "string",
+               description: "must be a string and is required"
+            },
             User_ID: {
                bsonType: "string",
                description: "must be a string and is required"
@@ -147,3 +151,10 @@ const localityData = [
    {name: "Guindy"},
    {name: "Alandhur"}
 ];
+
+var dummyAdmin = {
+   First_Name: 'Madras Ninja',
+   Mobile_Number: '1234567890',
+   Email_Id: 'madrasninja@gmail.com',
+   User_Type: 0
+};

@@ -15,15 +15,17 @@ function SMTP(config){
 		  		var keys = [];
 				for(var k in data)
 					keys.push(k);
-				var nHtml = '';
-				keys.forEach((dataKey, ind) => {
-					nHtml += html.replace(new RegExp('{{' + dataKey + '}}', 'g'), data[dataKey]);
-				});
-		  		cb({result: 'success', html: nHtml});
+				if(keys.length > 0) {
+					keys.forEach((dataKey, ind) => {
+						html = html.replace(new RegExp('{{' + dataKey + '}}', 'g'), data[dataKey]);
+					});
+				}
+		  		cb({result: 'success', html: html});
 		  	}
 		});
 	};
 	this.sendMail = function(mail, cb){
+		mail.to = typeof mail.to == 'string' ? mail.to : mail.to.join(',');
 		self.smtp.sendMail(mail, function(error, response){
 		    if(error)
 		        cb(error, response);
