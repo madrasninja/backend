@@ -43,7 +43,7 @@ const Booking = function() {
 				Locality_ID: req.body.Locality_ID,
 				Service_Type_ID: req.body.Service_Type_ID,
 				Address: req.body.Address,
-				Status_ID: '0',
+				Status_ID: 0,
 				Payment_Status: 0,
 				Payment_Details: {},
 				Labour_ID: [],
@@ -67,6 +67,7 @@ const Booking = function() {
 		self.db.get('user', {Mobile_Number: req.body.Mobile_Number}, user => {
 			if(user.length == 0){
 				var newUser = {
+					_id: common.getMongoObjectId(),
 					First_Name: req.body.First_Name,
 					Last_Name: typeof req.body.Last_Name != 'undefined' ? req.body.Last_Name : '',
 					Mobile_Number: req.body.Mobile_Number,
@@ -158,6 +159,52 @@ const Booking = function() {
 			cb(emailIDS);
 		});
 	};
+
+	this.getBookingList = function(req, res){
+		var lookups = [
+			{
+				$lookup: {
+					from: 'user',
+					localField: 'User_ID',
+					foreignField: '_id',
+					as: 'user'
+				}
+			},
+			{
+				$lookup: {
+					from: 'locality',
+					localField: 'Locality_ID',
+					foreignField: '_id',
+					as: 'locality'
+				}
+			},
+			{
+				$lookup: {
+					from: 'service_type',
+					localField: 'Service_Type_ID',
+					foreignField: '_id',
+					as: 'service_type'
+				}
+			},
+			{
+				$replaceRoot: {
+			        newRoot: {
+			            $mergeObjects: [		            	
+			            	"$$ROOT",
+			            	{user: { $arrayElemAt: [ "$user", 0 ] }},
+			            	{locality: { $arrayElemAt: [ "$locality", 0 ] }},
+			            	{service_type: { $arrayElemAt: [ "$service_type", 0 ] }}
+			            ],			            
+			        }
+			    }
+		    }
+		];
+		self.db.connect((db) => {
+			db.collection('booking').aggregate(lookups, (err, data) => {
+				res.json(data);
+		  	});
+		});
+	}
 };
 
  module.exports = Booking;

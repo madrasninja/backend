@@ -33,6 +33,8 @@ function Routes(app){
 	app.post('/bookservice', Booking.onSubmitBooking);
 
 	app.post('/proceedforpayment', Booking.onPaymentFinished);
+
+	app.get('/getbookinglist', Booking.getBookingList);
 }
 
 module.exports = Routes;

@@ -4,6 +4,7 @@ const assert = require('assert');
 
 const url = 'mongodb://localhost:27017';
 const dbName = 'madrasninja';
+var collection = require('./collections.js');
 
 function DB(){
 	this.connect = function(cb){
@@ -70,13 +71,33 @@ DB.prototype.update = function(tbName, wh, data, cb){
 	});
 };
 
-DB.prototype.get =  function(tbName, wh, cb){
+DB.prototype.get = function(tbName, wh, cb){
 	this.connect(function(db){
 		if(typeof wh.length === "undefined"){
 			db.collection(tbName).find(wh).toArray((err, data) => {
 				cb(data);
 		  	});
 		}
+	});
+};
+
+DB.prototype.initDB = function(){/*create collection and insert initial records*/
+	this.connect((dbs) => {
+		dbs.command({dropDatabase: 1});
+		this.connect((db) => {
+			collection.createUserCollection(db, () => {
+				collection.createBookingCollection(db, () => {
+					collection.createStatusCollection(db, () => {
+						collection.createServiceCollection(db, () => {
+							collection.createLocalityCollection(db, () => {
+								collection.initRecords(this);
+								this.insert('settings', collection.settingsData,(err, r)=>{});
+							});
+						});
+					});
+				});
+			});			
+		});
 	});
 };
 

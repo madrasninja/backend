@@ -1,4 +1,4 @@
-
+var ObjectId = require('mongodb').ObjectId;
 module.exports = {
 	uniqueid: function() {
 		  function s4() {
@@ -7,5 +7,8 @@ module.exports = {
 		      .substring(1);
 		  }
 		  return s4();
+	},
+	getMongoObjectId: function(){
+		return new ObjectId().toString();
 	}
 };
