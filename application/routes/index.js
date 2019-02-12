@@ -1,10 +1,12 @@
 
 var Booking = require('./Booking.js');
+var Labour = require('./labour.js');
 
 function Routes(app){
 	var self = this;
 	self.db = require('../config').db;
 	Booking = new Booking();
+	Labour = new Labour();
 	app.get('/', function(req, res) {
 		self.db.get('settings', {}, function(data){
 			if(data.length == 1)
@@ -35,6 +37,8 @@ function Routes(app){
 	app.post('/proceedforpayment', Booking.onPaymentFinished);
 
 	app.get('/getbookinglist', Booking.getBookingList);
+
+	app.post('/savelabour', Labour.executeUpdate);
 }
 
 module.exports = Routes;

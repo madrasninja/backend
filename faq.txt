@@ -1,0 +1,2 @@
+1. Payment Method ?
+2. if Admin want to assign labour in not available scenario, what's process for that?
