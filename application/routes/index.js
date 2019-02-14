@@ -36,9 +36,15 @@ function Routes(app){
 
 	app.post('/proceedforpayment', Booking.onPaymentFinished);
 
+	app.get('/getbookinglist/:offset', Booking.getBookingList);
+
 	app.get('/getbookinglist', Booking.getBookingList);
 
 	app.post('/savelabour', Labour.executeUpdate);
+
+	app.get('/getlabourforbooking/:BID/:offset', Booking.getLabourForBooking);
+
+	app.get('/getlabourforbooking/:BID', Booking.getLabourForBooking);
 }
 
 module.exports = Routes;

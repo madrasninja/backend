@@ -199,12 +199,74 @@ const Booking = function() {
 			    }
 		    }
 		];
+		if(typeof req.params.offset !== 'undefined'){
+			lookups.push({ $limit: 10});
+			lookups.push({ $skip: parseInt(req.params.offset)});
+		}
 		self.db.connect((db) => {
 			db.collection('booking').aggregate(lookups, (err, data) => {
 				res.json(data);
 		  	});
 		});
-	}
+	};
+	this.getLabourForBooking = function(req, res){
+		self.db.get('booking', {ID: req.params.BID}, data => {
+			if(data.length > 0){
+				var reqFrom = data[0].Session_Time.From.split(' ')[1];
+				var reqTo = data[0].Session_Time.To.split(' ')[1];
+				var lookups = [
+					{
+						$lookup: {
+							from: 'locality',
+							localField: 'Locality_ID',
+							foreignField: '_id',
+							as: 'locality'
+						}
+					},
+					{
+						$lookup: {
+							from: 'service_type',
+							localField: 'Service_Type_ID',
+							foreignField: '_id',
+							as: 'service_type'
+						}
+					},
+					{
+						$replaceRoot: {
+					        newRoot: {
+					            $mergeObjects: [		            	
+					            	"$$ROOT",
+					            	{locality: { $arrayElemAt: [ "$locality", 0 ] }},
+					            	{service_type: { $arrayElemAt: [ "$service_type", 0 ] }}
+					            ],			            
+					        }
+					    }
+				    },
+					{
+						$match: {
+							$and: [
+								{Service_Type_ID: data[0].Service_Type_ID},
+								{Locality_ID: data[0].Locality_ID},
+								{User_Type: 2},
+								{'Service_Time.From': { $lte: reqFrom}},
+								{'Service_Time.To': { $gte: reqTo}}
+							]
+						}
+					}
+				];
+				if(typeof req.params.offset !== 'undefined'){
+					lookups.push({ $limit: 10});
+					lookups.push({ $skip: parseInt(req.params.offset)});
+				}
+				self.db.connect((db) => {
+					db.collection('user').aggregate(lookups, (err, labour) => {
+						res.json(labour);
+				  	});
+				});
+			}else
+				res.json({response: 'error', message: 'Booking Not Found'});
+		});
+	};//9:30 < 14:00 && 18:30 > 15:00
 };
 
  module.exports = Booking;
