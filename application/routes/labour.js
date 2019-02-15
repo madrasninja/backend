@@ -1,10 +1,12 @@
 var ObjectId = require('mongodb').ObjectId;
 var config = require('../config/index.js');
 var common = require('../public/common.js');
+var User = require('./user.js');
 
 function Labour() {
 	var self = this;
 	self.db = config.db;
+	User = new User();
 	this.executeUpdate = function(req, res) {
 
 		if(typeof req.body.First_Name == 'undefined' ||
@@ -49,7 +51,7 @@ function Labour() {
 			if(labour.length == 0){
 				newUser._id = common.getMongoObjectId();
 				newUser.Mobile_Number = "" + req.body.Mobile_Number;					
-			    self.checkUserExist(newUser.Mobile_Number, (isExist, usr) => {
+			    User.checkUserExist(newUser.Mobile_Number, (isExist, usr) => {
 			    	if(!isExist){
 			    		self.db.insert('user', newUser, (err, result) => {
 							response.insert_id = newUser._id;
@@ -66,11 +68,6 @@ function Labour() {
 			}
 		});
 	};
-	this.checkUserExist = function(MN, cb) {
-		self.db.get('user', {Mobile_Number: MN}, user => {
-			cb(user.length > 0, user);
-		});
-	}
 }
 
 module.exports = Labour;

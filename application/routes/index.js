@@ -1,12 +1,14 @@
 
 var Booking = require('./Booking.js');
 var Labour = require('./labour.js');
+var User = require('./user.js');
 
 function Routes(app){
 	var self = this;
 	self.db = require('../config').db;
 	Booking = new Booking();
 	Labour = new Labour();
+	User = new User();
 	app.get('/', function(req, res) {
 		self.db.get('settings', {}, function(data){
 			if(data.length == 1)
@@ -45,6 +47,12 @@ function Routes(app){
 	app.get('/getlabourforbooking/:BID/:offset', Booking.getLabourForBooking);
 
 	app.get('/getlabourforbooking/:BID', Booking.getLabourForBooking);
+
+	app.post('/assignlabour', Booking.AssignLabour);
+
+	app.get('/getuser/:type/:ID', User.getUser);
+	app.get('/getuser/:type', User.getUser);
+	app.get('/getuser', User.getUser);
 }
 
 module.exports = Routes;

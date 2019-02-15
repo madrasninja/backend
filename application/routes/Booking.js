@@ -194,7 +194,7 @@ const Booking = function() {
 			            	{user: { $arrayElemAt: [ "$user", 0 ] }},
 			            	{locality: { $arrayElemAt: [ "$locality", 0 ] }},
 			            	{service_type: { $arrayElemAt: [ "$service_type", 0 ] }}
-			            ],			            
+			            ],
 			        }
 			    }
 		    }
@@ -267,6 +267,18 @@ const Booking = function() {
 				res.json({response: 'error', message: 'Booking Not Found'});
 		});
 	};//9:30 < 14:00 && 18:30 > 15:00
+	this.AssignLabour = function(req, res){
+		if(typeof req.body.Booking_ID == 'undefined' ||
+			typeof req.body.Labour_ID == 'undefined'){
+			res.json({response: 'error', message: 'Data\'s Missing'});
+			return;
+		}
+		var Labour_ID = typeof req.body.Labour_ID == 'string' ? 
+			[req.body.Labour_ID] : req.body.Labour_ID;
+		self.db.update('booking', {ID: req.body.Booking_ID}, {Labour_ID: Labour_ID}, (err, result) => {
+			res.json({response: 'success', message: 'Labour Assigned SuccessFull'});
+		});
+	};
 };
 
  module.exports = Booking;
