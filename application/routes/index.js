@@ -32,6 +32,13 @@ function Routes(app){
 		});
 	});
 
+	app.get('/getstatuslist', function(req, res) {
+		self.db.get('status', {}, status => {
+			res.json(status);
+		});
+	});
+
+
 	/*app.get('/on_booking', Booking.onBooking);*/
 
 	app.post('/bookservice', Booking.onSubmitBooking);

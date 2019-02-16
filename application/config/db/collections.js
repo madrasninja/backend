@@ -150,7 +150,7 @@ const statusData = [
 const service_typeData = [
    {_id: common.getMongoObjectId(), name: 'Full House cleaning'},
    {_id: common.getMongoObjectId(), name: 'Kitchen Cleaning'},
-   {_id: common.getMongoObjectId(), name: 'Restroom Cleaning'},
+   {_id: common.getMongoObjectId(), name: 'Bathroom Cleaning'},
    {_id: common.getMongoObjectId(), name: 'Carpet Cleaning'},
    {_id: common.getMongoObjectId(), name: 'Sofa Cleaning'},
    {_id: common.getMongoObjectId(), name: 'Marble Polishing'}

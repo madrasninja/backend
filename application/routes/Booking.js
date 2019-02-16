@@ -187,13 +187,22 @@ const Booking = function() {
 				}
 			},
 			{
+				$lookup: {
+					from: 'status',
+					localField: 'Status_ID',
+					foreignField: '_id',
+					as: 'status'
+				}
+			},
+			{
 				$replaceRoot: {
 			        newRoot: {
 			            $mergeObjects: [		            	
 			            	"$$ROOT",
 			            	{user: { $arrayElemAt: [ "$user", 0 ] }},
 			            	{locality: { $arrayElemAt: [ "$locality", 0 ] }},
-			            	{service_type: { $arrayElemAt: [ "$service_type", 0 ] }}
+			            	{service_type: { $arrayElemAt: [ "$service_type", 0 ] }},
+			            	{status: { $arrayElemAt: [ "$status", 0 ] }}
 			            ],
 			        }
 			    }
