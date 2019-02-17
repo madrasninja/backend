@@ -93,7 +93,7 @@ const Booking = function() {
 			Payment_Status = 2;
 		else if(req.body.Payment_Response == 'failed')
 			Payment_Status = 3;
-		var UPD = {Payment_Status: Payment_Status};
+		var UPD = {Payment_Status: Payment_Status, Status_ID: Payment_Status == 1 ? 1 : 0};
 		if(typeof req.body.Payment_Details !='undefined')
 				UPD.Payment_Details = req.body.Payment_Details;
 		self.db.update('booking', {ID: req.body.Booking_ID}, UPD, (err, result) => {
@@ -284,7 +284,8 @@ const Booking = function() {
 		}
 		var Labour_ID = typeof req.body.Labour_ID == 'string' ? 
 			[req.body.Labour_ID] : req.body.Labour_ID;
-		self.db.update('booking', {ID: req.body.Booking_ID}, {Labour_ID: Labour_ID}, (err, result) => {
+		var UPD = {Labour_ID: Labour_ID, Status_ID: 2};
+		self.db.update('booking', {ID: req.body.Booking_ID}, UPD, (err, result) => {
 			res.json({response: 'success', message: 'Labour Assigned SuccessFull'});
 		});
 	};
