@@ -93,7 +93,7 @@ const Booking = function() {
 			Payment_Status = 2;
 		else if(req.body.Payment_Response == 'failed')
 			Payment_Status = 3;
-		var UPD = {Payment_Status: Payment_Status, Status_ID: Payment_Status == 1 ? 1 : 0};
+		var UPD = {Payment_Status: Payment_Status, Status_ID: 1};
 		if(typeof req.body.Payment_Details !='undefined')
 				UPD.Payment_Details = req.body.Payment_Details;
 		self.db.update('booking', {ID: req.body.Booking_ID}, UPD, (err, result) => {
