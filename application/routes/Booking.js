@@ -214,7 +214,21 @@ const Booking = function() {
 		}
 		self.db.connect((db) => {
 			db.collection('booking').aggregate(lookups, (err, data) => {
-				res.json(data);
+				var c1 = c2 = 0;				
+				data.forEach((d, k) => {
+					if(d.Status_ID == 2 || d.Labour_ID.length > 0)
+						c1++;
+				});
+				data.forEach((d, k) => {
+					if(d.Status_ID == 2 || d.Labour_ID.length > 0){						
+						self.db.get('user', {_id: {$in: d.Labour_ID}, User_Type: 2}, (lab) => {
+							c2++;
+							data[k].Labours = lab;
+							if(c1 == c2)
+								res.json(data);
+						});
+					}
+				});				
 		  	});
 		});
 	};
