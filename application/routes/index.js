@@ -60,6 +60,9 @@ function Routes(app){
 	app.get('/getuser/:type/:ID', User.getUser);
 	app.get('/getuser/:type', User.getUser);
 	app.get('/getuser', User.getUser);
+
+	app.post('/login', User.Signin);
+	app.post('/signup', User.SignUp);
 }
 
 module.exports = Routes;
