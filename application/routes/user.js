@@ -225,11 +225,11 @@ function User() {
 	};
 
 	this.Get_Me = function(req, res){
-		if(typeof req.query.token == 'undefined'){
+		if(typeof req.headers.token == 'undefined'){
 			res.json({response: 'error', message: 'Invalid Access Token'});
 			return;
 		}
-		var token = req.query.token;
+		var token = req.headers.token;
 		self.db.get('user', {accessToken: token}, (data) => {
 			if(data.length > 0)
 			    res.json({response: 'success', user: data[0]});
