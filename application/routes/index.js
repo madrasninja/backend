@@ -63,6 +63,8 @@ function Routes(app){
 
 	app.post('/login', User.Signin);
 	app.post('/signup', User.SignUp);
+	app.get('/validatetoken', User.Validate_Token);
+	app.get('/getme', User.Get_Me);
 }
 
 module.exports = Routes;

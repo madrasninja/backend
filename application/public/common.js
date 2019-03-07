@@ -1,6 +1,7 @@
 var ObjectId = require('mongodb').ObjectId;
 
 module.exports = {
+	frontEndUrl: "https://madrasninja.netlify.com/",
 	uniqueid: function() {
 		  function s4() {
 		    return Math.floor((1 + Math.random()) * 0x10000)
@@ -8,6 +9,25 @@ module.exports = {
 		      .substring(1);
 		  }
 		  return s4();
+	},
+	current_time: function(t) {
+	  var t = typeof t === 'undefined' ? '' : t;
+	  if(t != '')
+	    t = typeof t !== 'object' ? new Date( t ) : t;
+	  var time = t == '' ? new Date() : t;
+	  var date = 
+	    time.getFullYear() +'-'+ 
+	    ('0' + (time.getMonth() + 1)).slice(-2) +'-'+
+	    ('0' + time.getDate()).slice(-2);
+	  var format = 
+	    ("0" + time.getHours()).slice(-2)   + ":" + 
+	    ("0" + time.getMinutes()).slice(-2) + ":" + 
+	    ("0" + time.getSeconds()).slice(-2);
+	  return date+' '+format;
+	},
+	addHours: function(t, h) {    
+	   t.setTime(t.getTime() + (h*60*60*1000)); 
+	   return t;   
 	},
 	getMongoObjectId: function(){
 		return new ObjectId().toString();
