@@ -143,7 +143,7 @@ function User() {
 					self.db.update('user', {_id: data[0]._id}, UPD, (err, result) => {
 						self.verificationMail(link, data[0].Email_Id, "Generate Password");
 						res.json({response: 'success', message: 'You Have Already a User. '+
-							'We will send you a mail for generate your new password'});
+							'We will send you a mail for generate your new password', type: 2});
 					});
 				}
 			}else{
@@ -165,7 +165,7 @@ function User() {
 				self.db.insert('user', newUser, (err, result) => {
 			    	self.verificationMail(link, req.body.Email_Id, "Activation");
 					res.json({response: 'success', message: 'User Created Successfull. '+
-							'We will send you a mail for activate your account'});
+							'We will send you a mail for activate your account', type: 1});
 			    });
 			}
 		});
