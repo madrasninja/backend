@@ -224,14 +224,6 @@ function User() {
 		});
 	};
 
-	this.auth = function(){
-		return function(req, res, next){
-			if(req.query.hasOwnProperty('token'))
-				req.headers.token = req.query.token;
-			next();		
-		};
-	};
-
 	this.Get_Me = function(req, res){
 		if(typeof req.headers.token == 'undefined'){
 			res.json({response: 'error', message: 'Invalid Access Token'});
