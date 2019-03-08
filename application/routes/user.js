@@ -225,6 +225,7 @@ function User() {
 	};
 
 	this.Get_Me = function(req, res){
+		res.header('Access-Control-Allow-Headers', 'token');
 		if(typeof req.headers.token == 'undefined'){
 			res.json({response: 'error', message: 'Invalid Access Token'});
 			return;
