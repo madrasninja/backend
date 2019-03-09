@@ -206,21 +206,34 @@ function User() {
 			return;
 		}
 		var token = req.query.token;
+		self.isValidToken(token, (data, isValid, isExpired) => {
+			if(isValid && isExpired){
+				res.json({response: 'error', message: 'Token Expired'});
+			}
+			else if(isValid && !isExpired){
+				self.db.update('user', {_id: data[0]._id}, {isActivated: 1}, (err, result) => {
+					res.json({response: 'success', message: 'This is a valid token'});
+				});
+			}else{
+				res.json({response: 'error', message: 'Invalid Token'});
+			}
+		});
+	};
+
+	this.isValidToken = function(token, cb){
 		self.db.get('user', {"Verification_Mail.token": token}, (data) => {
 			if(data.length > 0){
 				var ct = common.current_time();
 				var gt = new Date(data[0].Verification_Mail.gtime);
 				gt = common.current_time(
 					common.addHours(gt, 0.5));
-				if(ct <= gt ){
-					self.db.update('user', {_id: data[0]._id}, {isActivated: 1}, (err, result) => {
-						res.json({response: 'success', message: 'This is a valid token'});
-					});
-				}else
-					res.json({response: 'error', message: 'Token Expired'});
+				if(ct <= gt )
+					cb(data, true, false);
+				else
+					cb(data, true, true);
 			}
 			else
-				res.json({response: 'error', message: 'Invalid Token'});
+				cb(data, false, false);
 		});
 	};
 
@@ -263,6 +276,43 @@ function User() {
 				});
 			}
 		});
+	};
+
+	this.setPassword = function(req, res){
+		if(!req.body.hasOwnProperty('verifyToken')){
+			res.json({response: 'error', message: 'Invalid Token'});
+			return;
+		}
+
+		if(typeof req.body.New_Password == 'undefined' ||
+			typeof req.body.Confirm_Password == 'undefined'){
+			res.json({response: 'error', message: 'Wrong Input'});
+			return;
+		}
+
+		if(req.body.New_Password != req.body.Confirm_Password){
+			res.json({response: 'error', message: 'Confirm Password Mismatch!'});
+			return;
+		}
+
+		var token = req.body.verifyToken;
+		self.isValidToken(token, (data, isValid, isExpired) => {
+			if(isValid && isExpired){
+				res.json({response: 'error', message: 'Token Expired'});
+			}
+			else if(isValid && !isExpired){
+				var UPD = {
+					password: common.MD5(req.body.New_Password),
+					Verification_Mail: {token: '', gtime: ''}
+				};
+				self.db.update('user', {_id: data[0]._id}, UPD, (err, result) => {
+					res.json({response: 'success', message: 'Password Updated'});
+				});
+			}else{
+				res.json({response: 'error', message: 'Invalid Token'});
+			}
+		});
+		
 	};
 }
 
