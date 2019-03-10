@@ -22,7 +22,7 @@ function Routes(app){
 
 	app.get('/getservicetypelist', function(req, res) {
 		self.db.get('service_type', {}, service_type => {
-			res.json({res: req.accessToken});
+			res.json({res: req.hasOwnProperty('accessToken')});
 		});
 	});
 
