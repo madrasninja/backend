@@ -74,11 +74,11 @@ function Routes(app){
 		var token = req.headers.token;
 		User.isValidAccessToken(token, (isValid, user) => {
 			if(isValid){
-			    res.json({response: 'success', user: user});
+				req.accessToken = token;
 			    next();
 			}
 			else
-				res.json({response: 'error', message: 'Invalid Access Token'});
+				res.json({response: 'error', message: 'Invalid Access TToken'});
 		});
 	});
 
