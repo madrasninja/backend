@@ -20,19 +20,19 @@ function Routes(app){
 	});
 	self.r = app;
 
-	app.get('/getservicetypelist', function(req, res) {
+	app.get('/getservicetypelist', User.auth(), function(req, res) {
 		self.db.get('service_type', {}, service_type => {
-			res.json({res: req.query.hasOwnProperty('accessToken')});
+			res.json(service_type);
 		});
 	});
 
-	app.get('/getlocalitylist', function(req, res) {
+	app.get('/getlocalitylist', User.auth(), function(req, res) {
 		self.db.get('locality', {}, locality => {
 			res.json(locality);
 		});
 	});
 
-	app.get('/getstatuslist', function(req, res) {
+	app.get('/getstatuslist', User.auth(), function(req, res) {
 		self.db.get('status', {}, status => {
 			res.json(status);
 		});
@@ -41,52 +41,32 @@ function Routes(app){
 
 	/*app.get('/on_booking', Booking.onBooking);*/
 
-	app.post('/bookservice', Booking.onSubmitBooking);
+	app.post('/bookservice', User.auth(), Booking.onSubmitBooking);
 
-	app.post('/proceedforpayment', Booking.onPaymentFinished);
+	app.post('/proceedforpayment', User.auth(), Booking.onPaymentFinished);
 
-	app.get('/getbookinglist/:offset', Booking.getBookingList);
+	app.get('/getbookinglist/:offset', User.auth(), Booking.getBookingList);
 
-	app.get('/getbookinglist', Booking.getBookingList);
+	app.get('/getbookinglist', User.auth(), Booking.getBookingList);
 
 	app.post('/savelabour', Labour.executeUpdate);
 
-	app.get('/getlabourforbooking/:BID/:offset', Booking.getLabourForBooking);
+	app.get('/getlabourforbooking/:BID/:offset', User.auth(), Booking.getLabourForBooking);
 
-	app.get('/getlabourforbooking/:BID', Booking.getLabourForBooking);
+	app.get('/getlabourforbooking/:BID', User.auth(), Booking.getLabourForBooking);
 
-	app.post('/assignlabour', Booking.AssignLabour);
+	app.post('/assignlabour', User.auth(), Booking.AssignLabour);
 
-	app.get('/getuser/:type/:ID', User.getUser);
-	app.get('/getuser/:type', User.getUser);
-	app.get('/getuser', User.getUser);
+	app.get('/getuser/:type/:ID', User.auth(), User.getUser);
+	app.get('/getuser/:type', User.auth(), User.getUser);
+	app.get('/getuser', User.auth(), User.getUser);	
 
-
-	app.use(function(req, res, next){
-
-
-		if(!req.headers.hasOwnProperty('token')){
-			res.status(403).send({ response: 'error', message: "Invalid Access Token" });
-			return;
-		}
-
-		var token = req.headers.token;
-		User.isValidAccessToken(token, (isValid, user) => {
-			if(isValid){
-				req.query.accessToken = token;
-			    next();
-			}
-			else
-				res.json({response: 'error', message: 'Invalid Access TToken'});
-		});
-	});
-
-	app.post('/login', User.Signin);
-	app.post('/signup', User.SignUp);
-	app.get('/validatetoken', User.Validate_Token);
-	app.get('/getme', User.Get_Me);
-	app.post('/forgetpassword', User.forgetPassword);
-	app.post('/setpassword', User.setPassword);
+	app.post('/login', User.auth(), User.Signin);
+	app.post('/signup', User.auth(), User.SignUp);
+	app.get('/validatetoken', User.auth(), User.Validate_Token);
+	app.get('/getme', User.auth(), User.Get_Me);
+	app.post('/forgetpassword', User.auth(), User.forgetPassword);
+	app.post('/setpassword', User.auth(), User.setPassword);
 }
 
 module.exports = Routes;

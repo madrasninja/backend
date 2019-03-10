@@ -13,6 +13,27 @@ function User() {
 			cb(user.length > 0, user);
 		});
 	};
+
+	this.auth = function(){
+		return function(req, res, next){
+
+			if(req.headers.hasOwnProperty('token')){
+
+				var token = req.headers.token;
+				self.isValidAccessToken(token, (isValid, user) => {
+					if(isValid){
+						req.accessToken = token;
+						next();
+					}
+					else
+						res.json({response: 'error', message: 'Invalid Access TToken'});
+				});
+
+			}else
+				next();
+		};
+	};
+
 	this.getUser = function(req, res){
 		var matchAnd = [];
 		var lookups = [];
