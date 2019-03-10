@@ -70,7 +70,7 @@ function Routes(app, api){
 		res.header('Access-Control-Allow-Headers', 'token');
 
 		if(!req.headers.hasOwnProperty('token')){
-			res.json({ response: 'error', message: "Invalid Access Token" });
+			res.status(403).send({ response: 'error', message: "Invalid Access Token" });
 			return;
 		}
 
