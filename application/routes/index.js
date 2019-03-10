@@ -3,7 +3,7 @@ var Booking = require('./Booking.js');
 var Labour = require('./labour.js');
 var User = require('./user.js');
 
-function Routes(app, api){
+function Routes(app){
 	var self = this;
 	self.db = require('../config').db;
 	Booking = new Booking();
@@ -62,7 +62,7 @@ function Routes(app, api){
 	app.get('/getuser', User.getUser);
 
 
-	api.use(function(req, res, next){
+	app.use(function(req, res, next){
 
 		res.header('Access-Control-Allow-Origin', '*');
 	    res.header('Access-Control-Allow-Methods', 'GET,PUT,POST,DELETE');
