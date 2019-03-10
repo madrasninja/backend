@@ -62,7 +62,7 @@ function Routes(app){
 	app.get('/getuser', User.getUser);
 
 
-	api.use(function(req, res, next){
+	app.use(function(req, res, next){
 
 		if(!req.headers.hasOwnProperty('token')){
 			res.json({ response: 'error', message: "Invalid Access Token" });
