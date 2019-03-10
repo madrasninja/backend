@@ -61,6 +61,25 @@ function Routes(app){
 	app.get('/getuser/:type', User.getUser);
 	app.get('/getuser', User.getUser);
 
+
+	api.use(function(req, res, next){
+
+		if(!req.headers.hasOwnProperty('token')){
+			res.json({ response: 'error', message: "Invalid Access Token" });
+			return;
+		}
+
+		var token = req.headers.token;
+		User.isValidAccessToken(token, (isValid, user) => {
+			if(isValid){
+			    res.json({response: 'success', user: user});
+			    next();
+			}
+			else
+				res.json({response: 'error', message: 'Invalid Access Token'});
+		});
+	});
+
 	app.post('/login', User.Signin);
 	app.post('/signup', User.SignUp);
 	app.get('/validatetoken', User.Validate_Token);

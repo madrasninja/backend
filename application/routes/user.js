@@ -243,11 +243,20 @@ function User() {
 			return;
 		}
 		var token = req.headers.token;
-		self.db.get('user', {accessToken: token}, (data) => {
-			if(data.length > 0)
-			    res.json({response: 'success', user: data[0]});
+		self.isValidAccessToken(token, (isValid, user) => {
+			if(isValid)
+			    res.json({response: 'success', user: user});
 			else
 				res.json({response: 'error', message: 'Invalid Access Token'});
+		});
+	};
+
+	this.isValidAccessToken = function(token, cb){
+		self.db.get('user', {accessToken: token}, (data) => {
+			if(data.length > 0)
+			    cb(true, data[0]);
+			else
+				cb(false, data);
 		});
 	};
 
