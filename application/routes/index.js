@@ -22,7 +22,7 @@ function Routes(app){
 
 	app.get('/getservicetypelist', function(req, res) {
 		self.db.get('service_type', {}, service_type => {
-			res.json({res: req.hasOwnProperty('accessToken')});
+			res.json({res: req.query.hasOwnProperty('accessToken')});
 		});
 	});
 
@@ -74,7 +74,7 @@ function Routes(app){
 		var token = req.headers.token;
 		User.isValidAccessToken(token, (isValid, user) => {
 			if(isValid){
-				req.accessToken = token;
+				req.query.accessToken = token;
 			    next();
 			}
 			else
