@@ -22,7 +22,7 @@ function Routes(app){
 
 	app.get('/getservicetypelist', function(req, res) {
 		self.db.get('service_type', {}, service_type => {
-			res.json(service_type);
+			res.json({res: req.accessToken});
 		});
 	});
 
@@ -78,7 +78,7 @@ function Routes(app){
 			    next();
 			}
 			else
-				res.status(403).send({response: 'fail', message: 'Invalid Access TToken'});
+				res.json({response: 'error', message: 'Invalid Access TToken'});
 		});
 	});
 
