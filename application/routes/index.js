@@ -64,6 +64,8 @@ function Routes(app){
 
 	app.use(function(req, res, next){
 
+		res.header('Access-Control-Allow-Headers', 'token');
+
 		if(!req.headers.hasOwnProperty('token')){
 			res.json({ response: 'error', message: "Invalid Access Token" });
 			return;
