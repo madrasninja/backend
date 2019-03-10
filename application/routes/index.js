@@ -78,7 +78,7 @@ function Routes(app){
 			    next();
 			}
 			else
-				res.json({response: 'error', message: 'Invalid Access TToken'});
+				res.status(403).send({response: 'fail', message: 'Invalid Access TToken'});
 		});
 	});
 
