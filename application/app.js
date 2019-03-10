@@ -34,7 +34,7 @@ app.use(session({
 app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({ extended: true }));
 
-var router = new Routes(express.Router());
+var router = new Routes(express.Router(), app);
 app.use(router.r);
 
 var server  = require('http').createServer(app);
