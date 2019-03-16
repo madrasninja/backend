@@ -92,7 +92,7 @@ function User() {
 		}
 		self.db.connect((db) => {
 			db.collection('user').aggregate(lookups, (err, user) => {
-				res.json(user);
+				res.json({user: user, ut: common.getUserType(2), lk: lookups});
 		  	});
 		});
 	};
@@ -131,6 +131,10 @@ function User() {
 			}
 		});
 	};
+
+	db.user.updateMany({User_Type: 3}, {$set: {User_Type: 4}})
+	db.user.updateMany({User_Type: 2}, {$set: {User_Type: 3}})
+	db.user.updateMany({User_Type: 0}, {$set: {User_Type: 1}})
 
 	this.SignOut = function(req, res){
 		if(!req.hasOwnProperty('accessToken')){
