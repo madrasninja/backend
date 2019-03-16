@@ -254,13 +254,14 @@ const Booking = function() {
 					}
 
 					data.forEach((d, k) => {
-						if(d.Status_ID == 2 || d.Labour_ID.length > 0){						
-							self.db.get('user', {_id: {$in: d.Labour_ID}, User_Type: 2}, (lab) => {
+						if(d.Status_ID == 2 || d.Labour_ID.length > 0){	
+							var wh = {_id: {$in: d.Labour_ID}, User_Type: 2};
+							db.collection('user').find(wh, {password: 0, accessToken: 0, Verification_Mail: 0}).toArray((err, lab) => {
 								c2++;
 								data[k].Labours = lab;
 								if(c1 == c2)
-									res.json(data);
-							});
+									res.json(data);//removefield
+						  	});
 						}
 					});				
 			  	});
@@ -318,7 +319,7 @@ const Booking = function() {
 				}
 				self.db.connect((db) => {
 					db.collection('user').aggregate(lookups, (err, labour) => {
-						res.json(labour);
+						res.json(labour);//removefield
 				  	});
 				});
 			}else
