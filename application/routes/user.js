@@ -113,7 +113,7 @@ function User() {
 				if(data[0].isActivated == 1){
 					var token = common.gToken(30);				
 					var tokens = !data[0].hasOwnProperty('accessToken') || typeof data[0].accessToken.length == 'undefined' 
-					|| data[0].accessToken.trim() == '' ? [] : data[0].accessToken;
+					|| typeof data[0].accessToken == 'string' ? [] : data[0].accessToken;
 					tokens.push(token);
 					self.db.update('user', {_id: data[0]._id}, {accessToken: tokens}, (err, result) => {
 						res.json({result: 'success', accessToken: token,
@@ -131,10 +131,10 @@ function User() {
 			return;
 		}
 
-		User.isValidAccessToken(req.accessToken, (isValid, data) => {
+		self.isValidAccessToken(req.accessToken, (isValid, data) => {
 			if(isValid){
 				var tokens = !data.hasOwnProperty('accessToken') || typeof data.accessToken.length == 'undefined' 
-					|| data.accessToken.trim() == '' ? [] : data.accessToken;
+					|| typeof data.accessToken == 'string' ? [] : data.accessToken;
 				tokens.splice(tokens.indexOf(req.accessToken), 1);
 				self.db.update('user', {_id: data._id}, {accessToken: tokens}, (err, result) => {
 					res.json({result: 'success', message: 'Access Token Removed'});
@@ -296,7 +296,7 @@ function User() {
 	};
 
 	this.isValidAccessToken = function(token, cb){
-		self.db.get('user', {accessToken: {$in: token}}, (data) => {
+		self.db.get('user', {accessToken: {$all: [token]}}, (data) => {
 			if(data.length > 0)
 			    cb(true, data[0]);
 			else

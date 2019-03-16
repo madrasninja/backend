@@ -63,6 +63,7 @@ function Routes(app){
 
 	app.post('/login', User.auth(), User.Signin);
 	app.post('/signup', User.auth(), User.SignUp);
+	app.get('/logout', User.auth(), User.SignOut);
 	app.get('/validatetoken', User.auth(), User.Validate_Token);
 	app.get('/getme', User.auth(), User.Get_Me);
 	app.post('/forgetpassword', User.auth(), User.forgetPassword);

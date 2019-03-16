@@ -237,9 +237,15 @@ const Booking = function() {
 			if(typeof req.params.offset !== 'undefined'){
 				lookups.push({ $limit: 10});
 				lookups.push({ $skip: parseInt(req.params.offset)});
-			}
+			}			
 			self.db.connect((db) => {
 				db.collection('booking').aggregate(lookups, (err, data) => {
+
+					if(data.length == 0){
+						res.json(data);
+						return;
+					}
+
 					var c1 = c2 = 0;				
 					data.forEach((d, k) => {
 						if(d.Status_ID == 2 || d.Labour_ID.length > 0)
