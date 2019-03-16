@@ -258,7 +258,7 @@ const Booking = function() {
 							var wh = {_id: {$in: d.Labour_ID}, User_Type: 2};
 							db.collection('user').find(wh, {password: 0, accessToken: 0, Verification_Mail: 0}).toArray((err, lab) => {
 								c2++;
-								data[k].Labours = typeof lab;
+								data[k].Labours = err;
 								if(c1 == c2)
 									res.json(data);//removefield
 						  	});
