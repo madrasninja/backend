@@ -35,6 +35,12 @@ function User() {
 	};
 
 	this.getUser = function(req, res){
+
+		if(!req.hasOwnProperty('accessToken')){
+			res.json({response: 'error', message: 'Invalid Access Token'});
+			return;
+		}
+		
 		var matchAnd = [];
 		var lookups = [];
 		lookups.push({ $project : { password: 0, Verification_Mail : 0 , accessToken : 0 } });
