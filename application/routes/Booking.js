@@ -171,7 +171,7 @@ const Booking = function() {
 
 		User.isValidAccessToken(req.accessToken, (isValid, user) => {
 			if(isValid){
-				afterValid(user.User_Type, User._id);
+				afterValid(user.User_Type, user._id);
 			}else{
 				res.json({response: 'error', message: 'Invalid Access Token'});
 			}
