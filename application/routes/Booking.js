@@ -227,11 +227,7 @@ const Booking = function() {
 			];
 			if(UT == 3){
 				lookups.push({
-					$match: {
-						$and: [
-							{User_ID: UID}
-						]
-					}
+					$match: {User_ID: UID}
 				});
 			}
 			if(typeof req.params.offset !== 'undefined'){
