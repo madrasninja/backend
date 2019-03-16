@@ -225,7 +225,7 @@ const Booking = function() {
 				    }
 			    }
 			];
-			if(UT == 3){
+			/*if(UT == 3){
 				lookups.push({
 					$match: {
 						$and: [
@@ -233,7 +233,7 @@ const Booking = function() {
 						]
 					}
 				});
-			}
+			}*/
 			if(typeof req.params.offset !== 'undefined'){
 				lookups.push({ $limit: 10});
 				lookups.push({ $skip: parseInt(req.params.offset)});
