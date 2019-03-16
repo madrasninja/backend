@@ -254,14 +254,19 @@ const Booking = function() {
 					}
 
 					data.forEach((d, k) => {
-						if(d.Status_ID == 2 || d.Labour_ID.length > 0){	
-							var wh = {_id: {$in: d.Labour_ID}, User_Type: 2};
-							db.collection('user').find(wh, {password: 0, accessToken: 0, Verification_Mail: 0}).toArray((err, lab) => {
+						if(d.Status_ID == 2 || d.Labour_ID.length > 0){						
+							self.db.get('user', {_id: {$in: d.Labour_ID}, User_Type: 2}, (lab) => {
 								c2++;
-								data[k].Labours = err;
+								data[k].Labours = [];
+								lab.forEach((l, kk) => {
+									delete l.password;
+									delete l.accessToken;
+									delete l.Verification_Mai;
+									data[k].Labours.push(l);
+								});
 								if(c1 == c2)
 									res.json(data);//removefield
-						  	});
+							});
 						}
 					});				
 			  	});
