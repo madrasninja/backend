@@ -26,7 +26,7 @@ function User() {
 						next();
 					}
 					else
-						res.json({response: 'error', message: 'Invalid Access TToken'});
+						res.json({response: 'error', message: 'Invalid Access Token'});
 				});
 
 			}else
@@ -112,12 +112,35 @@ function User() {
 			}else{
 				if(data[0].isActivated == 1){
 					var token = common.gToken(30);				
-					self.db.update('user', {_id: data[0]._id}, {accessToken: token}, (err, result) => {
+					var tokens = !data[0].hasOwnProperty('accessToken') || typeof data[0].accessToken.length == 'undefined' 
+					|| data[0].accessToken.trim() == '' ? [] : data[0].accessToken;
+					tokens.push(token);
+					self.db.update('user', {_id: data[0]._id}, {accessToken: tokens}, (err, result) => {
 						res.json({result: 'success', accessToken: token,
 						message: 'Valid User', User_Type: data[0].User_Type});
 					});
 				}else
 					res.json({result: 'error', message: 'Account Does\'nt Activated'});
+			}
+		});
+	};
+
+	this.SignOut = function(req, res){
+		if(!req.hasOwnProperty('accessToken')){
+			res.json({response: 'error', message: 'Invalid Access Token'});
+			return;
+		}
+
+		User.isValidAccessToken(req.accessToken, (isValid, data) => {
+			if(isValid){
+				var tokens = !data.hasOwnProperty('accessToken') || typeof data.accessToken.length == 'undefined' 
+					|| data.accessToken.trim() == '' ? [] : data.accessToken;
+				tokens.splice(tokens.indexOf(req.accessToken), 1);
+				self.db.update('user', {_id: data._id}, {accessToken: tokens}, (err, result) => {
+					res.json({result: 'success', message: 'Access Token Removed'});
+				});
+			}else{
+				res.json({response: 'error', message: 'Invalid Access Token'});
 			}
 		});
 	};
@@ -273,7 +296,7 @@ function User() {
 	};
 
 	this.isValidAccessToken = function(token, cb){
-		self.db.get('user', {accessToken: token}, (data) => {
+		self.db.get('user', {accessToken: {$in: token}}, (data) => {
 			if(data.length > 0)
 			    cb(true, data[0]);
 			else

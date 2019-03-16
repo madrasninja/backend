@@ -1,10 +1,12 @@
 var ObjectId = require('mongodb').ObjectId;
 var config = require('../config/index.js');
 var common = require('../public/common.js');
+var User = require('./user.js');
 
 const Booking = function() {	
 	var self = this;
 	self.db = config.db;
+	User = new User();
 	config.setSMTPConfig((smtp) => {
 		this.smtp = smtp;
 	});
@@ -161,76 +163,101 @@ const Booking = function() {
 	};
 
 	this.getBookingList = function(req, res){
-		var lookups = [
-			{
-				$lookup: {
-					from: 'user',
-					localField: 'User_ID',
-					foreignField: '_id',
-					as: 'user'
-				}
-			},
-			{
-				$lookup: {
-					from: 'locality',
-					localField: 'Locality_ID',
-					foreignField: '_id',
-					as: 'locality'
-				}
-			},
-			{
-				$lookup: {
-					from: 'service_type',
-					localField: 'Service_Type_ID',
-					foreignField: '_id',
-					as: 'service_type'
-				}
-			},
-			{
-				$lookup: {
-					from: 'status',
-					localField: 'Status_ID',
-					foreignField: '_id',
-					as: 'status'
-				}
-			},
-			{
-				$replaceRoot: {
-			        newRoot: {
-			            $mergeObjects: [		            	
-			            	"$$ROOT",
-			            	{user: { $arrayElemAt: [ "$user", 0 ] }},
-			            	{locality: { $arrayElemAt: [ "$locality", 0 ] }},
-			            	{service_type: { $arrayElemAt: [ "$service_type", 0 ] }},
-			            	{status: { $arrayElemAt: [ "$status", 0 ] }}
-			            ],
-			        }
-			    }
-		    }
-		];
-		if(typeof req.params.offset !== 'undefined'){
-			lookups.push({ $limit: 10});
-			lookups.push({ $skip: parseInt(req.params.offset)});
+
+		if(!req.hasOwnProperty('accessToken')){
+			res.json({response: 'error', message: 'Invalid Access Token'});
+			return;
 		}
-		self.db.connect((db) => {
-			db.collection('booking').aggregate(lookups, (err, data) => {
-				var c1 = c2 = 0;				
-				data.forEach((d, k) => {
-					if(d.Status_ID == 2 || d.Labour_ID.length > 0)
-						c1++;
-				});
-				data.forEach((d, k) => {
-					if(d.Status_ID == 2 || d.Labour_ID.length > 0){						
-						self.db.get('user', {_id: {$in: d.Labour_ID}, User_Type: 2}, (lab) => {
-							c2++;
-							data[k].Labours = lab;
-							if(c1 == c2)
-								res.json(data);
-						});
-					}
-				});				
-		  	});
+
+		User.isValidAccessToken(req.accessToken, (isValid, user) => {
+			if(isValid){
+				afterValid(user.User_Type, User._id);
+			}else{
+				res.json({response: 'error', message: 'Invalid Access Token'});
+			}
 		});
+
+		var afterValid = function(UT, UID){
+			var lookups = [
+				{
+					$lookup: {
+						from: 'user',
+						localField: 'User_ID',
+						foreignField: '_id',
+						as: 'user'
+					}
+				},
+				{
+					$lookup: {
+						from: 'locality',
+						localField: 'Locality_ID',
+						foreignField: '_id',
+						as: 'locality'
+					}
+				},
+				{
+					$lookup: {
+						from: 'service_type',
+						localField: 'Service_Type_ID',
+						foreignField: '_id',
+						as: 'service_type'
+					}
+				},
+				{
+					$lookup: {
+						from: 'status',
+						localField: 'Status_ID',
+						foreignField: '_id',
+						as: 'status'
+					}
+				},
+				{
+					$replaceRoot: {
+				        newRoot: {
+				            $mergeObjects: [		            	
+				            	"$$ROOT",
+				            	{user: { $arrayElemAt: [ "$user", 0 ] }},
+				            	{locality: { $arrayElemAt: [ "$locality", 0 ] }},
+				            	{service_type: { $arrayElemAt: [ "$service_type", 0 ] }},
+				            	{status: { $arrayElemAt: [ "$status", 0 ] }}
+				            ],
+				        }
+				    }
+			    }
+			];
+			if(UT == 3){
+				lookups.push({
+					$match: {
+						$and: [
+							{User_ID: UID}
+						]
+					}
+				});
+			}
+			if(typeof req.params.offset !== 'undefined'){
+				lookups.push({ $limit: 10});
+				lookups.push({ $skip: parseInt(req.params.offset)});
+			}
+			self.db.connect((db) => {
+				db.collection('booking').aggregate(lookups, (err, data) => {
+					var c1 = c2 = 0;				
+					data.forEach((d, k) => {
+						if(d.Status_ID == 2 || d.Labour_ID.length > 0)
+							c1++;
+					});
+					data.forEach((d, k) => {
+						if(d.Status_ID == 2 || d.Labour_ID.length > 0){						
+							self.db.get('user', {_id: {$in: d.Labour_ID}, User_Type: 2}, (lab) => {
+								c2++;
+								data[k].Labours = lab;
+								if(c1 == c2)
+									res.json(data);
+							});
+						}
+					});				
+			  	});
+			});
+		};
 	};
 	this.getLabourForBooking = function(req, res){
 		self.db.get('booking', {ID: req.params.BID}, data => {
