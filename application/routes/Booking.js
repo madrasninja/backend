@@ -247,6 +247,12 @@ const Booking = function() {
 						if(d.Status_ID == 2 || d.Labour_ID.length > 0)
 							c1++;
 					});
+
+					if(c1 == 0){
+						res.json(data);
+						return;
+					}
+
 					data.forEach((d, k) => {
 						if(d.Status_ID == 2 || d.Labour_ID.length > 0){						
 							self.db.get('user', {_id: {$in: d.Labour_ID}, User_Type: 2}, (lab) => {
