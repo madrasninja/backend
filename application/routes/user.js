@@ -288,8 +288,12 @@ function User() {
 		}
 		var token = req.headers.token;
 		self.isValidAccessToken(token, (isValid, user) => {
-			if(isValid)
+			if(isValid){
+				delete user.password;
+				delete user.accessToken;
+				delete user.Verification_Mail;
 			    res.json({response: 'success', user: user});
+			}
 			else
 				res.json({response: 'error', message: 'Invalid Access Token'});
 		});
