@@ -20,7 +20,7 @@ collection.createUserCollection = function(db, cb) {
                   description: "must be a string and is required"
                },
                User_Type: {
-                  enum: [ 0,1,2,3 ],/* 0=superAdmin,1=admin,2=labour,3=customer*/
+                  bsonType: "number",/* 1=superAdmin,2=admin,3=labour,4=customer*/
                   description: "can only be one of the enum values and is required"
                }
             }

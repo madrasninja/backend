@@ -44,7 +44,7 @@ function Labour() {
 			Locality_ID: req.body.Locality_ID,
 			Service_Type_ID: req.body.Service_Type_ID,
 			Service_Time: req.body.Service_Time,		
-			User_Type: 2,
+			User_Type: common.getUserType(2),
 		};
 		self.db.get('user', {_id: typeof req.body._id == 'string' ? req.body._id : ''}, labour => {
 			var response = {response: 'success',message: 'Labour Data\'s Inserted'};

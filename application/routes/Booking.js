@@ -76,7 +76,7 @@ const Booking = function() {
 					Email_Id: req.body.Email_Id,
 					Alternate_Mobile_Number: typeof req.body.Alternate_Mobile_Number != 'undefined' ?
 							req.body.Alternate_Mobile_Number : '',					
-					User_Type: 3
+					User_Type: common.getUserType(3)
 				};
 				self.createCustomer(newUser, afterUserFetched);
 			}else
@@ -147,8 +147,8 @@ const Booking = function() {
 	this.getAdmins = function(cb){
 		var cond = {
 			$or: [
-				{User_Type: 0},
-				{User_Type: 1}
+				{User_Type: common.getUserType(0)},
+				{User_Type: common.getUserType(1)}
 			]
 		};
 		var emailIDS = [];
@@ -225,7 +225,7 @@ const Booking = function() {
 				    }
 			    }
 			];
-			if(UT == 3){
+			if(UT == common.getUserType(3)){/*return customer*/
 				lookups.push({
 					$match: {User_ID: UID}
 				});
@@ -255,7 +255,7 @@ const Booking = function() {
 
 					data.forEach((d, k) => {
 						if(d.Status_ID == 2 || d.Labour_ID.length > 0){						
-							self.db.get('user', {_id: {$in: d.Labour_ID}, User_Type: 2}, (lab) => {
+							self.db.get('user', {_id: {$in: d.Labour_ID}, User_Type: common.getUserType(2)}, (lab) => {
 								c2++;
 								data[k].Labours = [];
 								lab.forEach((l, kk) => {
@@ -311,7 +311,7 @@ const Booking = function() {
 							$and: [
 								{Service_Type_ID: data[0].Service_Type_ID},
 								{Locality_ID: data[0].Locality_ID},
-								{User_Type: 2},
+								{User_Type: common.getUserType(2)},
 								{'Service_Time.From': { $lte: reqFrom}},
 								{'Service_Time.To': { $gte: reqTo}}
 							]

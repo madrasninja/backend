@@ -42,6 +42,10 @@ module.exports = {
 			+rand()+rand()+rand()+rand()+rand()+rand()+rand()
 			+rand()+rand()+rand()+rand()+rand()+rand()+rand()).substr(0,n);
 	},
+	getUserType: function(ind){
+		var UserType = [ 1,2,3,4 ];
+		return typeof UserType[ind] == 'undefined' ? UserType : UserType[ind];
+	},
 	MD5: function (string) {
 
 	    function RotateLeft(lValue, iShiftBits) {

@@ -40,14 +40,14 @@ function User() {
 			res.json({response: 'error', message: 'Invalid Access Token'});
 			return;
 		}
-		
+
 		var matchAnd = [];
 		var lookups = [];
 		lookups.push({ $project : { password: 0, Verification_Mail : 0 , accessToken : 0 } });
 		if(typeof req.params.type !== 'undefined'){
 			var UT = parseInt(req.params.type);
 			matchAnd.push({User_Type: UT});
-			if(UT == 2){
+			if(UT == common.getUserType(2)){
 				lookups.push({
 					$lookup: {
 						from: 'service_type',
@@ -207,7 +207,7 @@ function User() {
 					password: common.MD5(req.body.password),
 					Alternate_Mobile_Number: typeof req.body.Alternate_Mobile_Number != 'undefined' ?
 							req.body.Alternate_Mobile_Number : '',				
-					User_Type: 3,
+					User_Type: common.getUserType(3),
 					isActivated: 0,
 					Verification_Mail: Verification_Mail
 				};
