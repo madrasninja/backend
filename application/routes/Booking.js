@@ -253,7 +253,7 @@ const Booking = function() {
 								c2++;
 								data[k].Labours = lab;
 								if(c1 == c2)
-									res.json({data: data, ut: UT,lk: lookups});
+									res.json(data);
 							});
 						}
 					});				
