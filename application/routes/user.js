@@ -37,6 +37,7 @@ function User() {
 	this.getUser = function(req, res){
 		var matchAnd = [];
 		var lookups = [];
+		lookups.push({ $project : { password: 0, Verification_Mail : 0 , accessToken : 0 } });
 		if(typeof req.params.type !== 'undefined'){
 			var UT = parseInt(req.params.type);
 			matchAnd.push({User_Type: UT});
@@ -67,7 +68,7 @@ function User() {
 				            ],			            
 				        }
 				    }
-			    });
+			    });			    
 			}
 		}
 		if(typeof req.params.ID !== 'undefined')

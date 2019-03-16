@@ -318,6 +318,7 @@ const Booking = function() {
 						}
 					}
 				];
+				lookups.push({ $project : { password: 0, Verification_Mail : 0 , accessToken : 0 } });
 				if(typeof req.params.offset !== 'undefined'){
 					lookups.push({ $limit: 10});
 					lookups.push({ $skip: parseInt(req.params.offset)});
