@@ -26,7 +26,7 @@ function User() {
 						next();
 					}
 					else
-						res.json({response: 'error', message: 'Invalid Access Token'});
+						res.json(common.getResponses('MNS005', {}));
 				});
 
 			}else
@@ -37,7 +37,7 @@ function User() {
 	this.getUser = function(req, res){
 
 		if(!req.hasOwnProperty('accessToken')){
-			res.json({response: 'error', message: 'Invalid Access Token'});
+			res.json(common.getResponses('MNS005', {}));
 			return;
 		}
 
@@ -92,7 +92,7 @@ function User() {
 		}
 		self.db.connect((db) => {
 			db.collection('user').aggregate(lookups, (err, user) => {
-				res.json(user);
+				res.json(common.getResponses('MNS020', user));
 		  	});
 		});
 	};
@@ -100,7 +100,7 @@ function User() {
 
 		if(typeof req.body.email == 'undefined' ||
 			typeof req.body.password == 'undefined'){
-			res.json({result: 'error', message: 'Wrong Input'});
+			res.json(common.getResponses('MNS003', {}));
 		}
 
 		var cond = {
@@ -115,7 +115,7 @@ function User() {
 		};
 		self.db.get('user', cond, (data) => {
 			if(data.length == 0){
-				res.json({result: 'error', message: 'Invalid User'});
+				res.json(common.getResponses('MNS004', {}));
 			}else{
 				if(data[0].isActivated == 1){
 					var token = common.gToken(30);				
@@ -123,18 +123,18 @@ function User() {
 					|| typeof data[0].accessToken == 'string' ? [] : data[0].accessToken;
 					tokens.push(token);
 					self.db.update('user', {_id: data[0]._id}, {accessToken: tokens}, (err, result) => {
-						res.json({result: 'success', accessToken: token,
-						message: 'Valid User', User_Type: data[0].User_Type});
+						res.json(common.getResponses('MNS020', {accessToken: token,
+						User_Type: data[0].User_Type}));						
 					});
 				}else
-					res.json({result: 'error', message: 'Account Does\'nt Activated'});
+					res.json(common.getResponses('MNS023', {}));
 			}
 		});
 	};
 
 	this.SignOut = function(req, res){
 		if(!req.hasOwnProperty('accessToken')){
-			res.json({response: 'error', message: 'Invalid Access Token'});
+			res.json(common.getResponses('MNS005', {}));
 			return;
 		}
 
@@ -144,10 +144,10 @@ function User() {
 					|| typeof data.accessToken == 'string' ? [] : data.accessToken;
 				tokens.splice(tokens.indexOf(req.accessToken), 1);
 				self.db.update('user', {_id: data._id}, {accessToken: tokens}, (err, result) => {
-					res.json({result: 'success', message: 'Access Token Removed'});
+					res.json(common.getResponses('MNS024', {}));
 				});
 			}else{
-				res.json({response: 'error', message: 'Invalid Access Token'});
+				res.json(common.getResponses('MNS005', {}));
 			}
 		});
 	};
@@ -158,12 +158,12 @@ function User() {
 			typeof req.body.Mobile_Number == 'undefined' ||
 			typeof req.body.password == 'undefined' || 
 			typeof req.body.cpassword == 'undefined'){
-			res.json({response: 'error', message: 'Wrong Input'});
+			res.json(common.getResponses('MNS003', {}));
 			return;
 		}
 
 		if(req.body.password != req.body.cpassword){
-			res.json({response: 'error', message: 'Confirm Password Mismatch!'});
+			res.json(common.getResponses('MNS025', {}));
 			return;
 		}
 
@@ -182,19 +182,18 @@ function User() {
 			if(data.length > 0){
 				if(typeof data[0].password != 'undefined'){
 					if(data[0].Email_Id == req.body.Email_Id)
-						res.json({response: 'error', message: 'Email Address Already Exist!'});
+						res.json(common.getResponses('MNS015', {}));
 					else if(data[0].Mobile_Number == req.body.Mobile_Number)
-						res.json({response: 'error', message: 'Mobile Number Already Exist!'});
+						res.json(common.getResponses('MNS016', {}));
 					else
-						res.json({response: 'error', message: 'Email or Mob Already Exist!'});
+						res.json(common.getResponses('MNS030', {}));
 				}else{
 					var link = common.frontEndUrl + "setpassword?token="
 					+ verifyToken;	
 					var UPD = {Verification_Mail: Verification_Mail};
 					self.db.update('user', {_id: data[0]._id}, UPD, (err, result) => {
 						self.verificationMail(link, data[0].Email_Id, "Generate Password");
-						res.json({response: 'success', message: 'You Have Already a User. '+
-							'We will send you a mail for generate your new password', type: 2});
+						res.json(common.getResponses('MNS008', {type: 2}));
 					});
 				}
 			}else{
@@ -215,8 +214,7 @@ function User() {
 					+ verifyToken;
 				self.db.insert('user', newUser, (err, result) => {
 			    	self.verificationMail(link, req.body.Email_Id, "Activation");
-					res.json({response: 'success', message: 'User Created Successfull. '+
-							'We will send you a mail for activate your account', type: 1});
+					res.json(common.getResponses('MNS009', {type: 1}));
 			    });
 			}
 		});
@@ -253,7 +251,7 @@ function User() {
 	this.Validate_Token = function(req, res){
 
 		if(typeof req.query.token == 'undefined'){
-			res.json({response: 'error', message: 'Invalid Token'});
+			res.json(common.getResponses('MNS006', {}));
 			return;
 		}
 		var token = req.query.token;
@@ -263,10 +261,10 @@ function User() {
 			}
 			else if(isValid && !isExpired){
 				self.db.update('user', {_id: data[0]._id}, {isActivated: 1}, (err, result) => {
-					res.json({response: 'success', message: 'This is a valid token'});
+					res.json(common.getResponses('MNS027', {}));
 				});
 			}else{
-				res.json({response: 'error', message: 'Invalid Token'});
+				res.json(common.getResponses('MNS006', {}));
 			}
 		});
 	};
@@ -290,7 +288,7 @@ function User() {
 
 	this.Get_Me = function(req, res){
 		if(typeof req.headers.token == 'undefined'){
-			res.json({response: 'error', message: 'Invalid Access Token'});
+			res.json(common.getResponses('MNS005', {}));
 			return;
 		}
 		var token = req.headers.token;
@@ -299,10 +297,10 @@ function User() {
 				delete user.password;
 				delete user.accessToken;
 				delete user.Verification_Mail;
-			    res.json({response: 'success', user: user});
+			    res.json(common.getResponses('MNS020', user));
 			}
 			else
-				res.json({response: 'error', message: 'Invalid Access Token'});
+				res.json(common.getResponses('MNS005', {}));
 		});
 	};
 
@@ -318,13 +316,13 @@ function User() {
 	this.forgetPassword = function(req, res){
 
 		if(typeof req.body.Email_Id == 'undefined'){
-			res.json({response: 'error', message: 'Wrong Input'});
+			res.json(common.getResponses('MNS003', {}));
 			return;
 		}
 
 		self.db.get('user', {Email_Id: req.body.Email_Id}, (data) => {
 			if(data.length == 0)
-				res.json({response: 'error', message: 'Invalid Email Address'});
+				res.json(common.getResponses('MNS017', {}));
 			else{
 				var verifyToken = common.gToken(30);						
 				var Verification_Mail = {
@@ -336,7 +334,7 @@ function User() {
 				var UPD = {Verification_Mail: Verification_Mail};
 				self.db.update('user', {_id: data[0]._id}, UPD, (err, result) => {
 					self.verificationMail(link, data[0].Email_Id, "Reset Password");
-					res.json({response: 'success', message: 'We will send you a mail for reset your password'});
+					res.json(common.getResponses('MNS029', {}));
 				});
 			}
 		});
@@ -344,25 +342,25 @@ function User() {
 
 	this.setPassword = function(req, res){
 		if(!req.body.hasOwnProperty('verifyToken')){
-			res.json({response: 'error', message: 'Invalid Token'});
+			res.json(common.getResponses('MNS006', {}));
 			return;
 		}
 
 		if(typeof req.body.New_Password == 'undefined' ||
 			typeof req.body.Confirm_Password == 'undefined'){
-			res.json({response: 'error', message: 'Wrong Input'});
+			res.json(common.getResponses('MNS003', {}));
 			return;
 		}
 
 		if(req.body.New_Password != req.body.Confirm_Password){
-			res.json({response: 'error', message: 'Confirm Password Mismatch!'});
+			res.json(common.getResponses('MNS025', {}));
 			return;
 		}
 
 		var token = req.body.verifyToken;
 		self.isValidToken(token, (data, isValid, isExpired) => {
 			if(isValid && isExpired){
-				res.json({response: 'error', message: 'Token Expired'});
+				res.json(common.getResponses('MNS007', {}));
 			}
 			else if(isValid && !isExpired){
 				var UPD = {
@@ -370,10 +368,10 @@ function User() {
 					Verification_Mail: {token: '', gtime: ''}
 				};
 				self.db.update('user', {_id: data[0]._id}, UPD, (err, result) => {
-					res.json({response: 'success', message: 'Password Updated'});
+					res.json(common.getResponses('MNS028', {}));
 				});
 			}else{
-				res.json({response: 'error', message: 'Invalid Token'});
+				res.json(common.getResponses('MNS006', {}));
 			}
 		});
 		

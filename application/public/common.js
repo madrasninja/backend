@@ -1,5 +1,168 @@
 var ObjectId = require('mongodb').ObjectId;
 
+var responses = [
+	{
+		code: 'MNS001',
+		message: 'Data\'s Inserted',
+		data: {}
+	},
+	{
+			code: 'MNS002',
+			message: 'Data\'s Updated',
+			data: {}
+	},
+	{
+			code: 'MNS003',
+			message: 'Wrong Input',
+			data: {}
+	},
+	{
+			code: 'MNS004',
+			message: 'Invalid User',
+			data: {}
+	},
+	{
+			code: 'MNS005',
+			message: 'Invalid Access Token',
+			data: {}
+	},
+	{
+			code: 'MNS006',
+			message: 'Invalid Token',
+			data: {}
+	},
+	{
+			code: 'MNS007',
+			message: 'Token Expired',
+			data: {}
+	},
+	{
+			code: 'MNS008',
+			message: 'You Have Already a User. We will send you a mail for generate your new password',
+			data: {}
+	},
+	{
+			code: 'MNS009',
+			message: 'User Created Successfull. We will send you a mail for activate your account',
+			data: {}
+	},
+	{
+			code: 'MNS010',
+			message: 'Booking data\'s Saved and Idle For Payment Response',
+			data: {}
+	},
+	{
+			code: 'MNS011',
+			message: 'Payment Done',
+			data: {}
+	},
+	{
+			code: 'MNS012',
+			message: 'Payment Cancelled',
+			data: {}
+	},
+	{
+			code: 'MNS013',
+			message: 'Payment Failed',
+			data: {}
+	},
+	{
+			code: 'MNS014',
+			message: 'Labour Assigned SuccessFull',
+			data: {}
+	},
+	{
+			code: 'MNS015',
+			message: 'Email Address Already Exist!',
+			data: {}
+	},
+	{
+			code: 'MNS016',
+			message: 'Mobile Number Already Exist',
+			data: {}
+	},
+	{
+			code: 'MNS017',
+			message: 'Invalid Email Address',
+			data: {}
+	},
+	{
+			code: 'MNS018',
+			message: 'Session Time From & To is Required',
+			data: {}
+	},
+	{
+			code: 'MNS019',
+			message: 'Data\'s Missing',
+			data: {}
+	},
+	{
+			code: 'MNS020',
+			message: 'Success',
+			data: {}
+	},
+	{
+			code: 'MNS021',
+			message: 'Booking Not Found',
+			data: {}
+	},
+	{
+			code: 'MNS022',
+			message: 'Mobile Number\'s Required',
+			data: {}
+	},
+	{
+			code: 'MNS023',
+			message: 'Account Does\'nt Activated',
+			data: {}
+	},
+	{
+			code: 'MNS024',
+			message: 'Access Token Removed',
+			data: {}
+	},
+	{
+			code: 'MNS025',
+			message: 'Confirm Password Mismatch!',
+			data: {}
+	},
+	{
+			code: 'MNS026',
+			message: 'Service Time From & To is Required',
+			data: {}
+	},
+	{
+			code: 'MNS027',
+			message: 'This is a valid token',
+			data: {}
+	},
+	{
+			code: 'MNS028',
+			message: 'Password Updated',
+			data: {}
+	},
+	{
+			code: 'MNS029',
+			message: 'We will send you a mail for reset your password',
+			data: {}
+	},
+	{
+			code: 'MNS030',
+			message: 'Email Address & Mobile Number Already Exist!',
+			data: {}
+	},
+	{
+			code: 'MNS031',
+			message: 'Invalid Booking ID',
+			data: {}
+	},
+	{
+			code: 'MNS032',
+			message: 'Labour Not Available',
+			data: {}
+	}
+];
+
 module.exports = {
 	frontEndUrl: "https://madrasninja.netlify.com/",
 	uniqueid: function() {
@@ -45,6 +208,16 @@ module.exports = {
 	getUserType: function(ind){
 		var UserType = [ 1,2,3,4 ];
 		return typeof UserType[ind] == 'undefined' ? UserType : UserType[ind];
+	},
+	getResponses(c, data){
+		var rt = {};
+		responses.forEach((d, k) => {
+			if(d.code == c){
+				d.data = data;
+				rt = d;
+			}
+		});
+		return rt;
 	},
 	MD5: function (string) {
 

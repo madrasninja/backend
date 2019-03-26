@@ -22,19 +22,19 @@ function Routes(app){
 
 	app.get('/getservicetypelist', User.auth(), function(req, res) {
 		self.db.get('service_type', {}, service_type => {
-			res.json(service_type);
+			res.json(common.getResponses('MNS020', service_type));
 		});
 	});
 
 	app.get('/getlocalitylist', User.auth(), function(req, res) {
 		self.db.get('locality', {}, locality => {
-			res.json(locality);
+			res.json(common.getResponses('MNS020', locality));
 		});
 	});
 
 	app.get('/getstatuslist', User.auth(), function(req, res) {
 		self.db.get('status', {}, status => {
-			res.json(status);
+			res.json(common.getResponses('MNS020', status));
 		});
 	});
 

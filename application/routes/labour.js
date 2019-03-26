@@ -14,22 +14,22 @@ function Labour() {
 			typeof req.body.Locality_ID == 'undefined' ||
 			typeof req.body.Service_Type_ID == 'undefined' ||
 			typeof req.body.Service_Time != 'object'){
-			res.json({response: 'error', message: 'Wrong Input'});
+			res.json(common.getResponses('MNS003', {}));
 			return;
 		}
 
 		if(typeof req.body.Service_Time.From == 'undefined' ||
 			typeof req.body.Service_Time.To == 'undefined'){
-			res.json({response: 'error', message: 'Service Time From & To is Required'});
+			res.json(common.getResponses('MNS026', {}));
 			return;
 		}
 
 		if(typeof req.body._id == 'undefined' && typeof req.body.Mobile_Number == 'undefined'){
-			res.json({response: 'error', message: 'Mobile Number\'s Required'});
+			res.json(common.getResponses('MNS022', {}));
 			return;				
 		}else{
 			if(req.body._id == '' && typeof req.body.Mobile_Number == 'undefined'){
-				res.json({response: 'error', message: 'Mobile Number\'s Required'});
+				res.json(common.getResponses('MNS022', {}));
 				return;
 			}
 		}
@@ -47,21 +47,21 @@ function Labour() {
 			User_Type: common.getUserType(2),
 		};
 		self.db.get('user', {_id: typeof req.body._id == 'string' ? req.body._id : ''}, labour => {
-			var response = {response: 'success',message: 'Labour Data\'s Inserted'};
+			var response = common.getResponses('MNS001', {});
 			if(labour.length == 0){
 				newUser._id = common.getMongoObjectId();
 				newUser.Mobile_Number = "" + req.body.Mobile_Number;					
 			    User.checkUserExist(newUser.Mobile_Number, (isExist, usr) => {
 			    	if(!isExist){
 			    		self.db.insert('user', newUser, (err, result) => {
-							response.insert_id = newUser._id;
+							response.data = {insert_id: newUser._id};
 					    	res.json(response);
 					    });
 			    	}else
-			    		res.json({response: 'error', message: 'Mobile Number\'s Aleady Exist'});
+			    		res.json(common.getResponses('MNS016', {}));
 			    });
 			}else{
-				response.message = 'Labour Data\'s Updated';
+				response = common.getResponses('MNS002', {});
 				self.db.update('user', {_id: req.body._id}, newUser, (err, result) => {
 					res.json(response);
 				});

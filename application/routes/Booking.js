@@ -27,13 +27,13 @@ const Booking = function() {
 			typeof req.body.Service_Type_ID == 'undefined' ||
 			typeof req.body.Address == 'undefined' ||
 			typeof req.body.Session_Time != 'object'){
-			res.json({response: 'error', message: 'Wrong Input'});
+			res.json(common.getResponses('MNS003', {}));
 			return;
 		}
 
 		if(typeof req.body.Session_Time.From == 'undefined' ||
 			typeof req.body.Session_Time.To == 'undefined'){
-			res.json({response: 'error', message: 'Session Time From & To is Required'});
+			res.json(common.getResponses('MNS018', {}));
 			return;
 		}
 
@@ -55,14 +55,10 @@ const Booking = function() {
 			self.db.insert('booking', insertData, (err, result) => {
 				if(result.insertedCount == 1){
 					self.sendEmailToUser(insertData.ID, req.body.Email_Id);
-					res.json({
-						response: 'success',
-						message: 'Booking Data\'s Saved and Idle For Payment Response',
-						Booking_ID: insertData.ID
-					});
+					res.json(common.getResponses('MNS010', {Booking_ID: insertData.ID}));					
 				}
 				else
-					res.json({response: 'error', message: 'Data\'s Missing'});
+					res.json(common.getResponses('MNS019', {}));
 			});
 		};
 
@@ -85,7 +81,7 @@ const Booking = function() {
 	};
 	this.onPaymentFinished = function(req, res) {
 		if(typeof req.body.Booking_ID != 'string' || typeof req.body.Payment_Response != 'string'){
-			res.json({response: 'error', message: 'Wrong Input'});
+			res.json(common.getResponses('MNS003', {}));
 			return;
 		}
 		var Payment_Status = 0;
@@ -99,18 +95,16 @@ const Booking = function() {
 		if(typeof req.body.Payment_Details !='undefined')
 				UPD.Payment_Details = req.body.Payment_Details;
 		self.db.update('booking', {ID: req.body.Booking_ID}, UPD, (err, result) => {
-			var message = 'Invalid Booking ID';
-			var response = 'error';
+			var response = common.getResponses('MNS031', {});
 			if(Payment_Status == 1 && parseInt(result.result.nModified) === 1){
-				message = 'Payment SuccessFull';
-				response = 'success';
+				response = common.getResponses('MNS011', {});
 				/*self.sendEmailToUser(req.body.Booking_ID);*/
 			}
 			else if(Payment_Status == 2)
-				message = 'Payment Cancelled';
+				response = common.getResponses('MNS012', {});
 			else if(Payment_Status == 3)
-				message = 'Payment Failed';
-			res.json({response: response, message: message, result: result});
+				response = common.getResponses('MNS013', {});
+			res.json(response);
 		});
 	};	
 	this.sendEmailToUser = function(BID, UEmail){
@@ -165,7 +159,7 @@ const Booking = function() {
 	this.getBookingList = function(req, res){
 
 		if(!req.hasOwnProperty('accessToken')){
-			res.json({response: 'error', message: 'Invalid Access Token'});
+			res.json(common.getResponses('MNS005', {}));
 			return;
 		}
 
@@ -173,7 +167,7 @@ const Booking = function() {
 			if(isValid){
 				afterValid(user.User_Type, user._id);
 			}else{
-				res.json({response: 'error', message: 'Invalid Access Token'});
+				res.json(common.getResponses('MNS005', {}));
 			}
 		});
 
@@ -265,7 +259,7 @@ const Booking = function() {
 									data[k].Labours.push(l);
 								});
 								if(c1 == c2)
-									res.json(data);//removefield
+									res.json(common.getResponses('MNS020', data));//removefield
 							});
 						}
 					});				
@@ -325,24 +319,28 @@ const Booking = function() {
 				}
 				self.db.connect((db) => {
 					db.collection('user').aggregate(lookups, (err, labour) => {
-						res.json(labour);//removefield
+						if(labour.length > 0)
+							res.json(common.getResponses('MNS020', labour));//removefield
+						else
+							res.json(common.getResponses('MNS032', labour));//removefield
 				  	});
 				});
 			}else
-				res.json({response: 'error', message: 'Booking Not Found'});
+				res.json(common.getResponses('MNS021', {}));
 		});
 	};//9:30 < 14:00 && 18:30 > 15:00
 	this.AssignLabour = function(req, res){
 		if(typeof req.body.Booking_ID == 'undefined' ||
 			typeof req.body.Labour_ID == 'undefined'){
-			res.json({response: 'error', message: 'Data\'s Missing'});
+			res.json(common.getResponses('MNS003', {}));
 			return;
 		}
 		var Labour_ID = typeof req.body.Labour_ID == 'string' ? 
 			[req.body.Labour_ID] : req.body.Labour_ID;
 		var UPD = {Labour_ID: Labour_ID, Status_ID: 2};
 		self.db.update('booking', {ID: req.body.Booking_ID}, UPD, (err, result) => {
-			res.json({response: 'success', message: 'Labour Assigned SuccessFull'});
+			var r = result.matchedCount > 0 ? 'MNS014' : 'MNS031';
+			res.json(common.getResponses(r, {}));
 		});
 	};
 };
