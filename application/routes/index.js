@@ -2,6 +2,7 @@
 var Booking = require('./Booking.js');
 var Labour = require('./labour.js');
 var User = require('./user.js');
+var common = require('../public/common.js');
 
 function Routes(app){
 	var self = this;
