@@ -232,7 +232,7 @@ const Booking = function() {
 				db.collection('booking').aggregate(lookups, (err, data) => {
 
 					if(data.length == 0){
-						res.json(data);
+						res.json(common.getResponses('MNS021', data));
 						return;
 					}
 
@@ -243,7 +243,7 @@ const Booking = function() {
 					});
 
 					if(c1 == 0){
-						res.json(data);
+						res.json(common.getResponses('MNS020', data));
 						return;
 					}
 
