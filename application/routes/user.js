@@ -257,10 +257,10 @@ function User() {
 		var token = req.query.token;
 		self.isValidToken(token, (data, isValid, isExpired) => {
 			if(isValid && isExpired){
-				res.json({response: 'error', message: 'Token Expired'});
+				res.json(common.getResponses('MNS007', {}));
 			}
 			else if(isValid && !isExpired){
-				self.db.update('user', {_id: data[0]._id}, {isActivated: 1}, (err, result) => {
+				self.db.update('user', {_id: data[0]._id}, {isActivated: 1, Verification_Mail: {}}, (err, result) => {
 					res.json(common.getResponses('MNS027', {}));
 				});
 			}else{
