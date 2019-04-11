@@ -14,7 +14,7 @@ const Booking = function() {
 	this.onBooking = function(req, res){
 		
 	};
-	/*to change booking date format*/
+	/*to change booking date format
 	self.db.get('booking', {}, book => {
 		self.db.connect((newdb) => {
 			book.forEach((sb, k)=>{
@@ -36,7 +36,7 @@ const Booking = function() {
 				});
 			});
 		});
-	});
+	});*/
 	this.createCustomer = function(user, cb){
 		self.db.insert('user', user, (err, result) => {
 	    	cb(result.insertedId);
