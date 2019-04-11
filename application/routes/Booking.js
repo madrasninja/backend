@@ -2,6 +2,7 @@ var ObjectId = require('mongodb').ObjectId;
 var config = require('../config/index.js');
 var common = require('../public/common.js');
 var User = require('./user.js');
+var crypto = require('crypto');
 
 const Booking = function() {	
 	var self = this;
@@ -12,7 +13,30 @@ const Booking = function() {
 	});
 	this.onBooking = function(req, res){
 		
-	};	
+	};
+	/*to change booking date format*/
+	self.db.get('booking', {}, book => {
+		self.db.connect((newdb) => {
+			book.forEach((sb, k)=>{
+				var fm = sb.Session_Time.From + ":00";
+				var fromTime = fm.split(' ')[1];
+				fm = fm.split(' ')[0].split('/');
+				sb.Session_Time.From = fm.length == 3 ? 
+					fm[2] + '-' + fm[1] + '-' + fm[0] + ' ' + fromTime
+					: fm.join('-') + ' ' + fromTime;
+
+				var to = sb.Session_Time.To + ":00";
+				var toTime = to.split(' ')[1];
+				to = to.split(' ')[0].split('/');
+				sb.Session_Time.To = to.length == 3 ? 
+					to[2] + '-' + to[1] + '-' + to[0] + ' ' + toTime
+					: to.join('-') + ' ' + toTime;
+				newdb.collection('booking').updateOne({ID: sb.ID}, {$set: sb}, function(err, r){
+					console.log(r);
+				});
+			});
+		});
+	});
 	this.createCustomer = function(user, cb){
 		self.db.insert('user', user, (err, result) => {
 	    	cb(result.insertedId);
@@ -35,6 +59,24 @@ const Booking = function() {
 			typeof req.body.Session_Time.To == 'undefined'){
 			res.json(common.getResponses('MNS018', {}));
 			return;
+		}
+
+		if(req.body.Session_Time.split('/').length == 3){
+			var sb = req.body.Session_Time;
+			var fm = sb.From + ":00";
+			var fromTime = fm.split(' ')[1];
+			fm = fm.split(' ')[0].split('/');
+			sb.From = fm.length == 3 ? 
+				fm[2] + '-' + fm[1] + '-' + fm[0] + ' ' + fromTime
+				: fm.join('-') + ' ' + fromTime;
+
+			var to = sb.To + ":00";
+			var toTime = to.split(' ')[1];
+			to = to.split(' ')[0].split('/');
+			sb.To = to.length == 3 ? 
+				to[2] + '-' + to[1] + '-' + to[0] + ' ' + toTime
+				: to.join('-') + ' ' + toTime;
+			req.body.Session_Time = sb;
 		}
 
 		var afterUserFetched = (User_ID) => {
@@ -77,6 +119,69 @@ const Booking = function() {
 				self.createCustomer(newUser, afterUserFetched);
 			}else
 				afterUserFetched(user[0]._id);
+		});
+	};
+	this.getPaymentHash = function(req, res){
+		var data = req.body;
+		var cryp = crypto.createHash('sha512');
+		var text = data.key+'|'+data.txnid+'|'+data.amount+'|'+data.pinfo+'|'+data.fname+'|'+data.email+'|||||'+data.udf5+'||||||'+data.salt;
+		cryp.update(text);
+		var hash = cryp.digest('hex');
+	    res.json(common.getResponses('MNS020', {hash: hash}));
+	},
+	this.onPaymentSuccess = function(req, res){
+		var key = req.body.key;
+		var salt = req.body.salt;
+		var txnid = req.body.txnid;
+		var amount = req.body.amount;
+		var productinfo = req.body.productinfo;
+		var firstname = req.body.firstname;
+		var email = req.body.email;
+		var udf5 = req.body.udf5;
+		var mihpayid = req.body.mihpayid;
+		var status = req.body.status;
+		var resphash = req.body.hash;
+		
+		var keyString 		=  	key+'|'+txnid+'|'+amount+'|'+productinfo+'|'+firstname+'|'+email+'|||||'+udf5+'|||||';
+		var keyArray 		= 	keyString.split('|');
+		var reverseKeyArray	= 	keyArray.reverse();
+		var reverseKeyString=	salt+'|'+status+'|'+reverseKeyArray.join('|');
+		
+		var cryp = crypto.createHash('sha512');	
+		cryp.update(reverseKeyString);
+		var calchash = cryp.digest('hex');
+		var details = {key: key,salt: salt,txnid: txnid,amount: amount, productinfo: productinfo, 
+		firstname: firstname, email: email, mihpayid : mihpayid, status: status,resphash: resphash,msg:msg};
+		req.body.Booking_ID = txnid;
+		
+		if(typeof req.body.Booking_ID != 'string' || typeof req.body.Payment_Response != 'string'){
+			res.json(common.getResponses('MNS003', {}));
+			return;
+		}
+		
+		var pf = req.body.Payment_Response;
+		var Payment_Status = 0;
+		if(pf.toLowerCase() != "cancel"){
+			if(calchash == resphash)
+				Payment_Status = 1;
+			else
+				Payment_Status = 3;
+		}else
+			Payment_Status = 2;
+
+		var UPD = {Payment_Status: Payment_Status, Status_ID: 1,
+			Payment_Details: details};
+		self.db.update('booking', {ID: req.body.Booking_ID}, UPD, (err, result) => {
+			var response = common.getResponses('MNS031', {});
+			if(Payment_Status == 1 && parseInt(result.result.nModified) === 1){
+				response = common.getResponses('MNS011', {});
+				/*self.sendEmailToUser(req.body.Booking_ID);*/
+			}
+			else if(Payment_Status == 2)
+				response = common.getResponses('MNS012', {});
+			else if(Payment_Status == 3)
+				response = common.getResponses('MNS013', {});
+			res.json(response);
 		});
 	};
 	this.onPaymentFinished = function(req, res) {
@@ -217,7 +322,8 @@ const Booking = function() {
 				            ],
 				        }
 				    }
-			    }
+			    },
+			    { $sort : { "Session_Time.From" : typeof req.query.desc !== 'undefined' ? -1 : 1 } }
 			];
 			if(UT == common.getUserType(3)){/*return customer*/
 				lookups.push({
@@ -225,7 +331,8 @@ const Booking = function() {
 				});
 			}
 			if(typeof req.params.offset !== 'undefined'){
-				lookups.push({ $limit: 10});
+				var lmt = typeof req.query.limit == 'undefined' ? 10 : req.query.limit;
+				lookups.push({ $limit: lmt});
 				lookups.push({ $skip: parseInt(req.params.offset)});
 			}			
 			self.db.connect((db) => {
@@ -243,7 +350,7 @@ const Booking = function() {
 					});
 
 					if(c1 == 0){
-						res.json(common.getResponses('MNS020', data));
+						res.json(common.getResponses('MNS020', common.seperate(data) ));
 						return;
 					}
 
@@ -259,7 +366,7 @@ const Booking = function() {
 									data[k].Labours.push(l);
 								});
 								if(c1 == c2)
-									res.json(common.getResponses('MNS020', data));//removefield
+									res.json(common.getResponses('MNS020', common.seperate(data) ));//removefield
 							});
 						}
 					});				

@@ -1,4 +1,11 @@
 var ObjectId = require('mongodb').ObjectId;
+String.prototype.getCharCode = function(){
+	var rt=[];
+	for(var i=0;i<this.length;i++){
+		rt.push(this.charCodeAt(i));
+	}
+	return rt;
+};
 
 var responses = [
 	{
@@ -216,6 +223,20 @@ module.exports = {
 				d.data = data;
 				rt = d;
 			}
+		});
+		return rt;
+	},
+	getCharCode: function(str){
+		return str.getCharCode();
+	},
+	seperate: function(data){
+		var $this = this;
+		var rt = {UpcomingBooking: [],PastBooking: []};
+		data.forEach((d, k) => {
+			if(d.Session_Time.From <= $this.current_time())
+				rt.PastBooking.push(d);
+			else
+				rt.UpcomingBooking.push(d);
 		});
 		return rt;
 	},
