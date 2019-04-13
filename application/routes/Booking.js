@@ -61,7 +61,7 @@ const Booking = function() {
 			return;
 		}
 
-		if(req.body.Session_Time.split('/').length == 3){
+		if(req.body.Session_Time.From.split('/').length == 3){
 			var sb = req.body.Session_Time;
 			var fm = sb.From + ":00";
 			var fromTime = fm.split(' ')[1];
