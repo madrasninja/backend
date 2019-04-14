@@ -13,7 +13,10 @@ function Labour() {
 			typeof req.body.Email_Id == 'undefined' ||
 			typeof req.body.Locality_ID == 'undefined' ||
 			typeof req.body.Service_Type_ID == 'undefined' ||
-			typeof req.body.Service_Time != 'object'){
+			typeof req.body.Service_Time != 'object' || 
+			typeof req.body.Gender == 'undefined' || 
+			typeof req.body.DOB == 'undefined' ||
+			typeof req.body.Address == 'undefined'){
 			res.json(common.getResponses('MNS003', {}));
 			return;
 		}
@@ -43,8 +46,11 @@ function Labour() {
 					req.body.Alternate_Mobile_Number : '',
 			Locality_ID: req.body.Locality_ID,
 			Service_Type_ID: req.body.Service_Type_ID,
-			Service_Time: req.body.Service_Time,		
-			User_Type: common.getUserType(2),
+			Service_Time: req.body.Service_Time,
+			Address: req.body.Address,
+			Gender: req.body.Gender,
+			DOB: req.body.DOB,		
+			User_Type: common.getUserType(2)
 		};
 		self.db.get('user', {_id: typeof req.body._id == 'string' ? req.body._id : ''}, labour => {
 			var response = common.getResponses('MNS001', {});

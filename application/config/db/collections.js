@@ -148,13 +148,14 @@ const statusData = [
    {_id: 5, name: 'Cancelled'}
 ];
 
+var fullHouseCleaning_id = common.getMongoObjectId();
 const service_typeData = [
-   {_id: common.getMongoObjectId(), name: 'Full House cleaning'},
-   {_id: common.getMongoObjectId(), name: 'Kitchen Cleaning'},
-   {_id: common.getMongoObjectId(), name: 'Bathroom Cleaning'},
-   {_id: common.getMongoObjectId(), name: 'Carpet Cleaning'},
-   {_id: common.getMongoObjectId(), name: 'Sofa Cleaning'},
-   {_id: common.getMongoObjectId(), name: 'Marble Polishing'}
+   { _id : fullHouseCleaning_id, name : "Full House cleaning" },
+   { _id : common.getMongoObjectId(), name : "Kitchen Cleaning", parent : [ fullHouseCleaning_id ] },
+   { _id : common.getMongoObjectId(), name : "Bathroom Cleaning", parent : [ fullHouseCleaning_id ] },
+   { _id : common.getMongoObjectId(), name : "Carpet Cleaning", parent : [ fullHouseCleaning_id ] },
+   { _id : common.getMongoObjectId(), name : "Sofa Cleaning", parent : [ fullHouseCleaning_id ] },
+   { _id : common.getMongoObjectId(), name : "Marble Polishing", parent : [ ] }
 ];
 
 const localityData = [

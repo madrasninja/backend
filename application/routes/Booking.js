@@ -402,15 +402,64 @@ const Booking = function() {
 	};
 	this.getLabourForBooking = function(req, res){
 
+		if(!req.hasOwnProperty('accessToken') || !req.hasOwnProperty('accessUser')){
+			res.json(common.getResponses('MNS005', {}));
+			return;
+		}
+
 		if(!req.params.hasOwnProperty('BID')){
 			res.json(common.getResponses('MNS003', {}));
 			return;
 		}
 
-		self.db.get('booking', {ID: req.params.BID}, data => {
+		if( !(req.accessUser.User_Type == common.getUserType(0) ||
+			req.accessUser.User_Type == common.getUserType(1)) ){
+			res.json(common.getResponses('MNS005', {}));
+			return;
+		}
+
+		self.db.connect((newdb) => {
+			var lk = [
+				{
+					$lookup: {
+						from: 'service_type',
+						localField: 'Service_Type_ID',
+						foreignField: '_id',
+						as: 'service_type'
+					}
+				},
+				{
+					$match: {ID: req.params.BID}
+				},
+				{
+					$replaceRoot: {
+				        newRoot: {
+				            $mergeObjects: [		            	
+				            	"$$ROOT",
+				            	{service_type: { $arrayElemAt: [ "$service_type", 0 ] }}
+				            ]
+				        }
+				    }
+			    }
+			]
+			newdb.collection('booking').aggregate(lk, (err, book) => {
+				callBack(book);
+			});
+		});
+
+		var callBack = function(data){
 			if(data.length > 0){
 				var reqFrom = data[0].Session_Time.From.split(' ')[1];
 				var reqTo = data[0].Session_Time.To.split(' ')[1];
+
+				var $superservice = [{Service_Type_ID: data[0].Service_Type_ID}];
+
+				if(data[0].service_type.parent.length > 0){
+					data[0].service_type.parent.forEach((pid, k) => {
+						$superservice.push({Service_Type_ID: pid});
+					});
+				}
+
 				var lookups = [
 					{
 						$lookup: {
@@ -442,11 +491,11 @@ const Booking = function() {
 					{
 						$match: {
 							$and: [
-								{Service_Type_ID: data[0].Service_Type_ID},
 								{Locality_ID: data[0].Locality_ID},
 								{User_Type: common.getUserType(2)},
 								{'Service_Time.From': { $lte: reqFrom}},
-								{'Service_Time.To': { $gte: reqTo}}
+								{'Service_Time.To': { $gte: reqTo}},
+								{$or: $superservice}
 							]
 						}
 					}
@@ -466,9 +515,15 @@ const Booking = function() {
 				});
 			}else
 				res.json(common.getResponses('MNS021', {}));
-		});
+		};
 	};//9:30 < 14:00 && 18:30 > 15:00
 	this.AssignLabour = function(req, res){
+
+		if(!req.hasOwnProperty('accessToken') || !req.hasOwnProperty('accessUser')){
+			res.json(common.getResponses('MNS005', {}));
+			return;
+		}
+
 		if(typeof req.body.Booking_ID == 'undefined' ||
 			typeof req.body.Labour_ID == 'undefined'){
 			res.json(common.getResponses('MNS003', {}));
