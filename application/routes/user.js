@@ -23,6 +23,7 @@ function User() {
 				self.isValidAccessToken(token, (isValid, user) => {
 					if(isValid){
 						req.accessToken = token;
+						req.accessUser = user;
 						next();
 					}
 					else
@@ -133,22 +134,17 @@ function User() {
 	};
 
 	this.SignOut = function(req, res){
-		if(!req.hasOwnProperty('accessToken')){
+		if(!req.hasOwnProperty('accessToken') || !req.hasOwnProperty('accessUser')){
 			res.json(common.getResponses('MNS005', {}));
 			return;
 		}
 
-		self.isValidAccessToken(req.accessToken, (isValid, data) => {
-			if(isValid){
-				var tokens = !data.hasOwnProperty('accessToken') || typeof data.accessToken.length == 'undefined' 
-					|| typeof data.accessToken == 'string' ? [] : data.accessToken;
-				tokens.splice(tokens.indexOf(req.accessToken), 1);
-				self.db.update('user', {_id: data._id}, {accessToken: tokens}, (err, result) => {
-					res.json(common.getResponses('MNS024', {}));
-				});
-			}else{
-				res.json(common.getResponses('MNS005', {}));
-			}
+		var data = req.accessUser;
+		var tokens = !data.hasOwnProperty('accessToken') || typeof data.accessToken.length == 'undefined' 
+			|| typeof data.accessToken == 'string' ? [] : data.accessToken;
+		tokens.splice(tokens.indexOf(req.accessToken), 1);
+		self.db.update('user', {_id: data._id}, {accessToken: tokens}, (err, result) => {
+			res.json(common.getResponses('MNS024', {}));
 		});
 	};
 
@@ -287,21 +283,16 @@ function User() {
 	};
 
 	this.Get_Me = function(req, res){
-		if(typeof req.headers.token == 'undefined'){
+		if(!req.hasOwnProperty('accessToken') || !req.hasOwnProperty('accessUser')){
 			res.json(common.getResponses('MNS005', {}));
 			return;
 		}
-		var token = req.headers.token;
-		self.isValidAccessToken(token, (isValid, user) => {
-			if(isValid){
-				delete user.password;
-				delete user.accessToken;
-				delete user.Verification_Mail;
-			    res.json(common.getResponses('MNS020', user));
-			}
-			else
-				res.json(common.getResponses('MNS005', {}));
-		});
+		var token = req.accessToken;
+		var user = req.accessUser;
+		delete user.password;
+		delete user.accessToken;
+		delete user.Verification_Mail;
+	    res.json(common.getResponses('MNS020', user));
 	};
 
 	this.isValidAccessToken = function(token, cb){

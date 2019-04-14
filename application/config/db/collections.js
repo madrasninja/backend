@@ -144,7 +144,8 @@ const statusData = [
    {_id: 1, name: 'Processing'},
    {_id: 2, name: 'Request Assigned'},
    {_id: 3, name: 'Work In-Progress'},
-   {_id: 4, name: 'Completed'}
+   {_id: 4, name: 'Completed'},
+   {_id: 5, name: 'Cancelled'}
 ];
 
 const service_typeData = [

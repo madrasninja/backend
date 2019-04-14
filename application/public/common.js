@@ -167,6 +167,11 @@ var responses = [
 			code: 'MNS032',
 			message: 'Labour Not Available',
 			data: {}
+	},
+	{
+			code: 'MNS033',
+			message: 'Booking Cancelled',
+			data: {}
 	}
 ];
 
@@ -231,9 +236,11 @@ module.exports = {
 	},
 	seperate: function(data){
 		var $this = this;
-		var rt = {UpcomingBooking: [],PastBooking: []};
+		var rt = {UpcomingBooking: [],PastBooking: [], Cancelled: []};
 		data.forEach((d, k) => {
-			if(d.Session_Time.From <= $this.current_time())
+			if(d.Status_ID == 5)
+				rt.Cancelled.push(d);
+			else if(d.Session_Time.From <= $this.current_time())
 				rt.PastBooking.push(d);
 			else
 				rt.UpcomingBooking.push(d);

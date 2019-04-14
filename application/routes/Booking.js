@@ -261,20 +261,44 @@ const Booking = function() {
 		});
 	};
 
-	this.getBookingList = function(req, res){
-
-		if(!req.hasOwnProperty('accessToken')){
+	this.cancelBooking = function(req, res) {
+		if(!req.hasOwnProperty('accessToken') || !req.hasOwnProperty('accessUser')){
 			res.json(common.getResponses('MNS005', {}));
 			return;
 		}
 
-		User.isValidAccessToken(req.accessToken, (isValid, user) => {
-			if(isValid){
-				afterValid(user.User_Type, user._id);
-			}else{
-				res.json(common.getResponses('MNS005', {}));
-			}
+		if(!req.params.hasOwnProperty('BID')){
+			res.json(common.getResponses('MNS003', {}));
+			return;
+		}
+
+		var $match = {ID: req.params.BID};
+		self.db.get('booking', $match, data => {
+
+			if(data.length > 0) {
+				data = data[0];
+				if(data.User_ID == req.accessUser._id 
+					|| req.accessUser.User_Type == common.getUserType(0) 
+					|| req.accessUser.User_Type == common.getUserType(1)){
+					var UPD = {Status_ID: 5};
+					self.db.update('booking', $match, UPD, (err, result) => {
+						var r = result.matchedCount > 0 
+						&& result.modifiedCount > 0 ? 'MNS033' : 'MNS031';
+						res.json(common.getResponses(r, {}));
+					});
+				}else
+					res.json(common.getResponses('MNS031', {}));
+			}else
+				res.json(common.getResponses('MNS031', {}));
 		});
+	}
+
+	this.getBookingList = function(req, res){
+
+		if(!req.hasOwnProperty('accessToken') || !req.hasOwnProperty('accessUser')){
+			res.json(common.getResponses('MNS005', {}));
+			return;
+		}	
 
 		var afterValid = function(UT, UID){
 			var lookups = [
@@ -373,8 +397,16 @@ const Booking = function() {
 			  	});
 			});
 		};
+
+		afterValid(req.accessUser.User_Type, req.accessUser._id);
 	};
 	this.getLabourForBooking = function(req, res){
+
+		if(!req.params.hasOwnProperty('BID')){
+			res.json(common.getResponses('MNS003', {}));
+			return;
+		}
+
 		self.db.get('booking', {ID: req.params.BID}, data => {
 			if(data.length > 0){
 				var reqFrom = data[0].Session_Time.From.split(' ')[1];

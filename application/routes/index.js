@@ -43,6 +43,7 @@ function Routes(app){
 	/*app.get('/on_booking', Booking.onBooking);*/
 
 	app.post('/bookservice', User.auth(), Booking.onSubmitBooking);
+	app.get('/cancelbooking/:BID', User.auth(), Booking.cancelBooking);
 
 	app.post('/proceedforpayment', User.auth(), Booking.onPaymentFinished);
 
