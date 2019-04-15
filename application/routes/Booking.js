@@ -11,9 +11,19 @@ const Booking = function() {
 	config.setSMTPConfig((smtp) => {
 		this.smtp = smtp;
 	});
-	this.onBooking = function(req, res){
-		
-	};
+	self.isTriggerAutomation = true;
+	setInterval(function(){
+
+		if(!self.isTriggerAutomation)
+			return;
+
+		var $wh = {'Session_Time.From': {$lte: common.current_time()}};
+		self.db.connect(function(newdb){
+			newdb.collection('booking').updateMany($wh, {$set: {Status_ID: 4}}, (err, r) => {
+				self.isTriggerAutomation = false;
+			});
+		});
+	}, 100 * 100);
 	/*to change booking date format
 	self.db.get('booking', {}, book => {
 		self.db.connect((newdb) => {
@@ -97,6 +107,7 @@ const Booking = function() {
 			self.db.insert('booking', insertData, (err, result) => {
 				if(result.insertedCount == 1){
 					self.sendEmailToUser(insertData.ID, req.body.Email_Id);
+					self.isTriggerAutomation = true;
 					res.json(common.getResponses('MNS010', {Booking_ID: insertData.ID}));					
 				}
 				else
