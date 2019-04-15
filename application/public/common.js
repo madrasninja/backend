@@ -172,6 +172,11 @@ var responses = [
 			code: 'MNS033',
 			message: 'Booking Cancelled',
 			data: {}
+	},
+	{
+			code: 'MNS034',
+			message: 'Wrong Password!',
+			data: {}
 	}
 ];
 

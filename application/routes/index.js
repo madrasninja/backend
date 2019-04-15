@@ -70,6 +70,7 @@ function Routes(app){
 	app.get('/getme', User.auth(), User.Get_Me);
 	app.post('/forgetpassword', User.auth(), User.forgetPassword);
 	app.post('/setpassword', User.auth(), User.setPassword);
+	app.post('/changepassword', User.auth(), User.changePassword);
 }
 
 module.exports = Routes;

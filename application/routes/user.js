@@ -356,6 +356,7 @@ function User() {
 			else if(isValid && !isExpired){
 				var UPD = {
 					password: common.MD5(req.body.New_Password),
+					isActivated: 1,
 					Verification_Mail: {token: '', gtime: ''}
 				};
 				self.db.update('user', {_id: data[0]._id}, UPD, (err, result) => {
@@ -366,6 +367,39 @@ function User() {
 			}
 		});
 		
+	};
+
+
+	this.changePassword = function(req, res){
+		if(!req.hasOwnProperty('accessToken') || !req.hasOwnProperty('accessUser')){
+			res.json(common.getResponses('MNS005', {}));
+			return;
+		}
+
+		if(typeof req.body.New_Password == 'undefined' || 
+			typeof req.body.Confirm_Password == 'undefined' || 
+			typeof req.body.Old_Password == 'undefined'){
+			res.json(common.getResponses('MNS003', {}));
+			return;
+		}
+
+		if(req.body.New_Password != req.body.Confirm_Password){
+			res.json(common.getResponses('MNS025', {}));
+			return;
+		}
+
+		if(common.MD5(req.body.Old_Password) != req.accessUser.password){
+			res.json(common.getResponses('MNS034', {}));
+			return;
+		}
+
+		var UPD = {
+			password: common.MD5(req.body.New_Password)
+		};
+		self.db.update('user', {_id: req.accessUser._id}, UPD , (err, result) => {
+			res.json(common.getResponses('MNS028', {}));
+		});
+
 	};
 }
 
