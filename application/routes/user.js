@@ -8,9 +8,26 @@ function User() {
 	config.setSMTPConfig((smtp) => {
 		this.smtp = smtp;
 	});
-	this.checkUserExist = function(MN, cb) {
-		self.db.get('user', {Mobile_Number: MN}, user => {
-			cb(user.length > 0, user);
+	this.checkUserExist = function(email, MN, cb) {
+		var cond = {$or: [
+			{Email_Id: email},
+			{Mobile_Number: MN}
+		]};
+		if(email == '')
+			cond = {Mobile_Number: MN};
+		if(MN == '')
+			cond = {Email_Id: email};
+		self.db.get('user', cond, data => {
+			var existType = 0;
+			if(data.length > 0){
+				if(data[0].Email_Id == email)
+					existType = 1;//email
+				else if(data[0].Mobile_Number == MN)
+					existType = 2;//mobno
+				else
+					existType = 3;//email & mobno
+			}
+			cb(existType, user);
 		});
 	};
 

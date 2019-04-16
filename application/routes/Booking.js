@@ -115,7 +115,11 @@ const Booking = function() {
 			});
 		};
 
-		self.db.get('user', {Mobile_Number: req.body.Mobile_Number}, user => {
+		var condition = {$or: [
+			{Email_Id: req.body.Email_Id},
+			{Mobile_Number: req.body.Mobile_Number}
+		]};
+		self.db.get('user', condition, user => {
 			if(user.length == 0){
 				var newUser = {
 					_id: common.getMongoObjectId(),

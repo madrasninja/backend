@@ -4,6 +4,38 @@ var Labour = require('./labour.js');
 var User = require('./user.js');
 var common = require('../public/common.js');
 
+
+var multer  = require('multer');
+var path = require('path');
+const fs = require('fs');
+var storage = multer.diskStorage({
+	destination: function (req, file, cb) {
+		var dir = './application/public/uploads/tmp/';
+		try {
+			if (!fs.existsSync(dir)){
+			    fs.mkdirSync(dir);
+			}
+			cb(null, dir);
+		} catch (err) {
+			req.json(common.getResponses('MNS035', {}));
+			return;
+		}	    
+	},
+	filename: function (req, file, cb) {
+	    cb(null, file.fieldname + '-' + Date.now() + path.extname(file.originalname))
+	}
+});
+var upload = multer({ storage: storage,
+	fileFilter: function (req, file, cb) {
+	    if(['image/png', 'image/jpg', 'image/jpeg', 'application/pdf'].indexOf(file.mimetype) != -1){
+	    	cb(null, true);
+	    	return;
+		}else{
+			req.json(common.getResponses('MNS036', {}));
+			return cb(null, false, new Error('Not an image'));
+		}
+	} });
+
 function Routes(app){
 	var self = this;
 	self.db = require('../config').db;
@@ -51,7 +83,8 @@ function Routes(app){
 
 	app.get('/getbookinglist', User.auth(), Booking.getBookingList);
 
-	app.post('/savelabour', Labour.executeUpdate);
+	var uploadFields = upload.fields([{ name: 'avatar', maxCount: 1 }, { name: 'Id_Prof', maxCount: 1 }]);
+	app.post('/savelabour', uploadFields, Labour.executeUpdate);
 
 	app.get('/getlabourforbooking/:BID/:offset', User.auth(), Booking.getLabourForBooking);
 

@@ -177,6 +177,16 @@ var responses = [
 			code: 'MNS034',
 			message: 'Wrong Password!',
 			data: {}
+	},
+	{
+			code: 'MNS035',
+			message: 'Error File Upload',
+			data: {}
+	},
+	{
+			code: 'MNS036',
+			message: 'File type miss mattch. Must upload png, jpg, jpeg or pdf',
+			data: {}
 	}
 ];
 
