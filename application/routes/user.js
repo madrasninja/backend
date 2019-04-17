@@ -434,56 +434,57 @@ function User() {
 		}
 
 		var UPD = {};
-		if(req.body.hasOwnProperty('First_Name'))
+		if(typeof req.body.First_Name != 'undefined')
 			UPD.First_Name = req.body.First_Name;
-		if(req.body.hasOwnProperty('Last_Name'))
+		if(typeof req.body.Last_Name != 'undefined')
 			UPD.Last_Name = req.body.Last_Name;
-		if(req.body.hasOwnProperty('Alternate_Mobile_Number'))
+		if(typeof req.body.Alternate_Mobile_Number != 'undefined')
 			UPD.Alternate_Mobile_Number = req.body.Alternate_Mobile_Number;
-		if(req.body.hasOwnProperty('Gender'))
+		if(typeof req.body.Gender != 'undefined')
 			UPD.Gender = req.body.Gender;
-		if(req.body.hasOwnProperty('DOB'))
+		if(typeof req.body.DOB != 'undefined')
 			UPD.DOB = req.body.DOB;
 		
 
-		if(typeof req.file.path != 'undefined'){
+		if(typeof req.file != 'undefined'){
+			if(typeof req.file.path != 'undefined'){
+				var removeUpload = function(){
+					if (fs.existsSync(req.file.path))
+						fs.unlinkSync(req.file.path);
+				};
+				var avatarExt = avatarFileName = avatarTargetPath = '';
+				var avatarDir = './application/public/uploads/avatars/';
+				try {
+					if (!fs.existsSync(avatarDir))
+					    fs.mkdirSync(avatarDir);
+				} catch (err) {
+					removeUpload();
+					res.json(common.getResponses('MNS035', {}));
+					return;
+				}
 
-			var removeUpload = function(){
-				if (fs.existsSync(req.file.path))
-					fs.unlinkSync(req.file.path);
-			};
-			var avatarExt = avatarFileName = avatarTargetPath = '';
-			var avatarDir = './application/public/uploads/avatars/';
-			try {
-				if (!fs.existsSync(avatarDir))
-				    fs.mkdirSync(avatarDir);
-			} catch (err) {
-				removeUpload();
-				res.json(common.getResponses('MNS035', {}));
-				return;
-			}
+				if(typeof req.fileError != 'undefined'){
+					removeUpload();
+					res.json(common.getResponses(req.fileError, {}));
+					return;
+				}
 
-			if(typeof req.fileError != 'undefined'){
-				removeUpload();
-				res.json(common.getResponses(req.fileError, {}));
-				return;
-			}
-
-			var avatarExt = path.extname(req.file.path);
-			if(avatarExt == '.pdf'){
-				removeUpload();
-				res.json(common.getResponses('MNS038', {}));
-				return;
-			}
-			avatarFileName = 'MNS_' + req.accessUser._id + avatarExt;
-			avatarTargetPath = avatarDir + avatarFileName;
-			UPD.avatar = avatarFileName;
-			try {
-	       		fs.renameSync(req.file.path, avatarTargetPath);
-	       	} catch (err) {
-	       		res.json(common.getResponses('MNS035', {}));
-				return;
-	       	}
+				var avatarExt = path.extname(req.file.path);
+				if(avatarExt == '.pdf'){
+					removeUpload();
+					res.json(common.getResponses('MNS038', {}));
+					return;
+				}
+				avatarFileName = 'MNS_' + req.accessUser._id + avatarExt;
+				avatarTargetPath = avatarDir + avatarFileName;
+				UPD.avatar = avatarFileName;
+				try {
+		       		fs.renameSync(req.file.path, avatarTargetPath);
+		       	} catch (err) {
+		       		res.json(common.getResponses('MNS035', {}));
+					return;
+		       	}
+		    }
 		}
 
 		self.db.update('user', {_id: req.accessUser._id}, UPD, (err, result) => {
