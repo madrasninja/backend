@@ -187,6 +187,11 @@ var responses = [
 			code: 'MNS036',
 			message: 'File type miss mattch. Must upload png, jpg, jpeg or pdf',
 			data: {}
+	},
+	{
+			code: 'MNS037',
+			message: 'Access Denied!',
+			data: {}
 	}
 ];
 

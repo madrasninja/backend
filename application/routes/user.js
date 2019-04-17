@@ -54,8 +54,14 @@ function User() {
 
 	this.getUser = function(req, res){
 
-		if(!req.hasOwnProperty('accessToken')){
+		if(!req.hasOwnProperty('accessToken') || !req.hasOwnProperty('accessUser')){
 			res.json(common.getResponses('MNS005', {}));
+			return;
+		}
+
+		if(req.accessUser.User_Type != common.getUserType(0) &&
+			req.accessUser.User_Type != common.getUserType(1)){
+			res.json(common.getResponses('MNS037', {}));
 			return;
 		}
 
