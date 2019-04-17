@@ -107,6 +107,7 @@ function Routes(app){
 	app.post('/forgetpassword', User.auth(), User.forgetPassword);
 	app.post('/setpassword', User.auth(), User.setPassword);
 	app.post('/changepassword', User.auth(), User.changePassword);
+	app.post('/updateuser', User.auth(), upload.single('avatar'), User.updateUser);
 }
 
 module.exports = Routes;
