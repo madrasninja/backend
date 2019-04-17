@@ -446,14 +446,14 @@ function User() {
 			UPD.DOB = req.body.DOB;
 		
 
+		var avatarExt = avatarFileName = avatarTargetPath = '';
+		var avatarDir = './application/public/uploads/avatars/';
 		if(typeof req.file != 'undefined'){
 			if(typeof req.file.path != 'undefined'){
 				var removeUpload = function(){
 					if (fs.existsSync(req.file.path))
 						fs.unlinkSync(req.file.path);
-				};
-				var avatarExt = avatarFileName = avatarTargetPath = '';
-				var avatarDir = './application/public/uploads/avatars/';
+				};				
 				try {
 					if (!fs.existsSync(avatarDir))
 					    fs.mkdirSync(avatarDir);
@@ -488,7 +488,7 @@ function User() {
 		}
 
 		self.db.update('user', {_id: req.accessUser._id}, UPD, (err, result) => {
-			res.json(common.getResponses('MNS002', {}));
+			res.json(common.getResponses('MNS002', {avatarDir: '/uploads/avatars/'}));
 		});
 	};
 }
