@@ -433,20 +433,6 @@ function User() {
 			return;
 		}
 
-		var newUser = {
-			_id: common.getMongoObjectId(),
-			First_Name: req.body.First_Name,
-			Last_Name: typeof req.body.Last_Name != 'undefined' ? req.body.Last_Name : '',
-			Mobile_Number: req.body.Mobile_Number,
-			Email_Id: req.body.Email_Id,
-			password: common.MD5(req.body.password),
-			Alternate_Mobile_Number: typeof req.body.Alternate_Mobile_Number != 'undefined' ?
-					req.body.Alternate_Mobile_Number : '',				
-			User_Type: common.getUserType(3),
-			isActivated: 0,
-			Verification_Mail: Verification_Mail
-		};
-
 		var UPD = {};
 		if(req.body.hasOwnProperty('First_Name'))
 			UPD.First_Name = req.body.First_Name;
