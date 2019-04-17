@@ -17,7 +17,9 @@ var storage = multer.diskStorage({
 			}
 			cb(null, dir);
 		} catch (err) {
-			req.json(common.getResponses('MNS035', {}));
+			//req.json(common.getResponses('MNS035', {}));
+			req.fileError = 'MNS035';
+			cb(null, dir);
 			return;
 		}	    
 	},
@@ -31,7 +33,8 @@ var upload = multer({ storage: storage,
 	    	cb(null, true);
 	    	return;
 		}else{
-			req.json(common.getResponses('MNS036', {}));
+			//req.json(common.getResponses('MNS036', {}));
+			req.fileError = 'MNS036';
 			return cb(null, false, new Error('Not an image'));
 		}
 	} });

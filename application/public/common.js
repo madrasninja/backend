@@ -185,12 +185,17 @@ var responses = [
 	},
 	{
 			code: 'MNS036',
-			message: 'File type miss mattch. Must upload png, jpg, jpeg or pdf',
+			message: 'File type miss match. Must upload png, jpg, jpeg or pdf',
 			data: {}
 	},
 	{
 			code: 'MNS037',
 			message: 'Access Denied!',
+			data: {}
+	},
+	{
+			code: 'MNS038',
+			message: 'File type miss match. Must upload png, jpg, jpeg',
 			data: {}
 	}
 ];

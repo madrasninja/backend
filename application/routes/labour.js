@@ -28,6 +28,10 @@ function Labour() {
 		var UPD = {};
 		if(typeof files.avatar != 'undefined'){
 			avatarExt = path.extname(files.avatar[0].path);
+			if(avatarExt =='.pdf'){
+				res.json(common.getResponses('MNS038', {}));
+				return;
+			}
 			avatarFileName = 'MNS_' + insId + avatarExt;
 			avatarTargetPath = avatarDir + avatarFileName;
 			UPD.avatar = avatarFileName;

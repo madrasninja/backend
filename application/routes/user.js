@@ -1,6 +1,8 @@
 var ObjectId = require('mongodb').ObjectId;
 var config = require('../config/index.js');
 var common = require('../public/common.js');
+var path = require('path');
+const fs = require('fs');
 
 function User() {
 	var self = this;
@@ -423,6 +425,84 @@ function User() {
 			res.json(common.getResponses('MNS028', {}));
 		});
 
+	};
+
+	this.updateUser = function(req, res) {
+		if(!req.hasOwnProperty('accessToken') || !req.hasOwnProperty('accessUser')){
+			res.json(common.getResponses('MNS005', {}));
+			return;
+		}
+
+		var newUser = {
+			_id: common.getMongoObjectId(),
+			First_Name: req.body.First_Name,
+			Last_Name: typeof req.body.Last_Name != 'undefined' ? req.body.Last_Name : '',
+			Mobile_Number: req.body.Mobile_Number,
+			Email_Id: req.body.Email_Id,
+			password: common.MD5(req.body.password),
+			Alternate_Mobile_Number: typeof req.body.Alternate_Mobile_Number != 'undefined' ?
+					req.body.Alternate_Mobile_Number : '',				
+			User_Type: common.getUserType(3),
+			isActivated: 0,
+			Verification_Mail: Verification_Mail
+		};
+
+		var UPD = {};
+		if(req.body.hasOwnProperty('First_Name'))
+			UPD.First_Name = req.body.First_Name;
+		if(req.body.hasOwnProperty('Last_Name'))
+			UPD.Last_Name = req.body.Last_Name;
+		if(req.body.hasOwnProperty('Alternate_Mobile_Number'))
+			UPD.Alternate_Mobile_Number = req.body.Alternate_Mobile_Number;
+		if(req.body.hasOwnProperty('Gender'))
+			UPD.Gender = req.body.Gender;
+		if(req.body.hasOwnProperty('DOB'))
+			UPD.DOB = req.body.DOB;
+		
+
+		if(typeof req.file.path != 'undefined'){
+
+			var removeUpload = function(){
+				if (fs.existsSync(req.file.path))
+					fs.unlinkSync(req.file.path);
+			};
+			var avatarExt = avatarFileName = avatarTargetPath = '';
+			var avatarDir = './application/public/uploads/avatars/';
+			try {
+				if (!fs.existsSync(avatarDir))
+				    fs.mkdirSync(avatarDir);
+			} catch (err) {
+				removeUpload();
+				res.json(common.getResponses('MNS035', {}));
+				return;
+			}
+
+			if(typeof req.fileError != 'undefined'){
+				removeUpload();
+				res.json(common.getResponses(req.fileError, {}));
+				return;
+			}
+
+			var avatarExt = path.extname(req.file.path);
+			if(avatarExt == '.pdf'){
+				removeUpload();
+				res.json(common.getResponses('MNS038', {}));
+				return;
+			}
+			avatarFileName = 'MNS_' + req.accessUser._id + avatarExt;
+			avatarTargetPath = avatarDir + avatarFileName;
+			UPD.avatar = avatarFileName;
+			try {
+	       		fs.renameSync(req.file.path, avatarTargetPath);
+	       	} catch (err) {
+	       		res.json(common.getResponses('MNS035', {}));
+				return;
+	       	}
+		}
+
+		self.db.update('user', {_id: req.accessUser._id}, UPD, (err, result) => {
+			res.json(common.getResponses('MNS002', {}));
+		});
 	};
 }
 
