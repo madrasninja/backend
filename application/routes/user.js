@@ -447,7 +447,7 @@ function User() {
 		
 
 		var avatarExt = avatarFileName = avatarTargetPath = '';
-		var avatarDir = './application/public/uploads/avatars/';
+		var avatarDir = './application/uploads/avatars/';
 		if(typeof req.file != 'undefined'){
 			if(typeof req.file.path != 'undefined'){
 				var removeUpload = function(){
@@ -488,7 +488,7 @@ function User() {
 		}
 
 		self.db.update('user', {_id: req.accessUser._id}, UPD, (err, result) => {
-			res.json(common.getResponses('MNS002', {avatarDir: '/uploads/avatars/'}));
+			res.json(common.getResponses('MNS002', {avatarDir: config.liveUrl + 'image/avatar/'}));
 		});
 	};
 }

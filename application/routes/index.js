@@ -10,7 +10,7 @@ var path = require('path');
 const fs = require('fs');
 var storage = multer.diskStorage({
 	destination: function (req, file, cb) {
-		var dir = './application/public/uploads/tmp/';
+		var dir = './application/uploads/tmp/';
 		try {
 			if (!fs.existsSync(dir)){
 			    fs.mkdirSync(dir);
@@ -108,6 +108,19 @@ function Routes(app){
 	app.post('/setpassword', User.auth(), User.setPassword);
 	app.post('/changepassword', User.auth(), User.changePassword);
 	app.post('/updateuser', User.auth(), upload.single('avatar'), User.updateUser);
+
+	app.get('/image/avatar/:img', function(req, res){
+
+		if(!req.params.hasOwnProperty('img')){
+			res.send('404 Error');
+			return;
+		}
+		var imgPath = __dirname + '/../uploads/avatars/' + req.params.img;
+		if (fs.existsSync(imgPath))
+			res.sendFile(path.resolve(imgPath));
+		else
+			res.send('404 Error');
+	});
 }
 
 module.exports = Routes;

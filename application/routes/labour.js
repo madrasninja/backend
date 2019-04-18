@@ -13,8 +13,8 @@ function Labour() {
 	this.fileUpload = function(files, insId, res, resData) {
 		var avatarExt = avatarFileName = avatarTargetPath = '';
 		var idProfExt = idProfFileName = idProfTargetPath = '';
-		var avatarDir = './application/public/uploads/avatars/';
-		var labourDir = './application/public/uploads/labour_docs/';
+		var avatarDir = './application/uploads/avatars/';
+		var labourDir = './application/uploads/labour_docs/';
 		try {
 			if (!fs.existsSync(avatarDir))
 			    fs.mkdirSync(avatarDir);
@@ -167,16 +167,16 @@ function Labour() {
 	    			self.db.insert('user', newUser, (err, result) => {
 				    	sendResponse(common.getResponses('MNS001', 
 				    		{insert_id: newUser._id,
-				    		 avatarDir: '/uploads/avatars/',
-				    		  idProfDir: '/uploads/labour_docs/'
+				    		 avatarDir: config.liveUrl + 'image/avatar/',
+				    		  idProfDir: config.liveUrl + 'docs/labour_docs/'
 				    		}));
 				    });
 				}else{
 		    		self.db.update('user', {_id: req.body._id}, newUser, (err, result) => {
 						sendResponse(common.getResponses('MNS002', 
 							{update_id: req.body._id,
-							avatarDir: '/uploads/avatars/',
-							idProfDir: '/uploads/labour_docs/'
+							avatarDir: config.liveUrl + 'image/avatar/',
+				    		  idProfDir: config.liveUrl + 'docs/labour_docs/'
 						} ));
 					});
 				}

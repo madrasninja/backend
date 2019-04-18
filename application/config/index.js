@@ -22,6 +22,7 @@ var main = {
 	    }
 	},
 	dbName: 'madrasninja',
+	liveUrl: 'https://api.madrasninja.com/',
 	session_time: 999999999999,
 	initApp: function(dir){
 		main.app_dir = dir;		
