@@ -405,7 +405,6 @@ const Booking = function() {
 										l.Id_Prof = config.liveUrl + 'image/avatar/' + l.Id_Prof;
 									if(l.hasOwnProperty('DOB')){			
 										var dob = l.DOB.split('-');
-										l.DOB = '';
 										if(dob.length > 2)
 											l.DOB = dob[2] + '/' + dob[1] + '/' + dob[0];
 									}
@@ -542,7 +541,6 @@ const Booking = function() {
 									u.Id_Prof = config.liveUrl + 'image/avatar/' + u.Id_Prof;
 								if(u.hasOwnProperty('DOB')){			
 									var dob = u.DOB.split('-');
-									u.DOB = '';
 									if(dob.length > 2)
 										u.DOB = dob[2] + '/' + dob[1] + '/' + dob[0];
 								}

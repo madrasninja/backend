@@ -128,7 +128,6 @@ function User() {
 							u.Id_Prof = config.liveUrl + 'image/avatar/' + u.Id_Prof;
 						if(u.hasOwnProperty('DOB')){			
 							var dob = u.DOB.split('-');
-							u.DOB = '';
 							if(dob.length > 2)
 								u.DOB = dob[2] + '/' + dob[1] + '/' + dob[0];
 						}
@@ -338,7 +337,6 @@ function User() {
 			user.Id_Prof = config.liveUrl + 'image/avatar/' + user.Id_Prof;
 		if(user.hasOwnProperty('DOB')){			
 			var dob = user.DOB.split('-');
-			user.DOB = '';
 			if(dob.length > 2)
 				user.DOB = dob[2] + '/' + dob[1] + '/' + dob[0];
 		}
