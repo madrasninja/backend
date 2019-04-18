@@ -399,6 +399,16 @@ const Booking = function() {
 								c2++;
 								data[k].Labours = [];
 								lab.forEach((l, kk) => {
+									if(l.hasOwnProperty('avatar'))
+										l.avatar = config.liveUrl + 'image/avatar/' + l.avatar;
+									if(l.hasOwnProperty('Id_Prof'))
+										l.Id_Prof = config.liveUrl + 'image/avatar/' + l.Id_Prof;
+									if(l.hasOwnProperty('DOB')){			
+										var dob = l.DOB.split('-');
+										l.DOB = '';
+										if(dob.length > 2)
+											l.DOB = dob[2] + '/' + dob[1] + '/' + dob[0];
+									}
 									delete l.password;
 									delete l.accessToken;
 									delete l.Verification_Mai;
@@ -522,10 +532,28 @@ const Booking = function() {
 				}
 				self.db.connect((db) => {
 					db.collection('user').aggregate(lookups, (err, labour) => {
+
+						var rt = [];
+						if(labour.length > 0){
+							labour.forEach((u, k) => {
+								if(u.hasOwnProperty('avatar'))
+									u.avatar = config.liveUrl + 'image/avatar/' + u.avatar;
+								if(u.hasOwnProperty('Id_Prof'))
+									u.Id_Prof = config.liveUrl + 'image/avatar/' + u.Id_Prof;
+								if(u.hasOwnProperty('DOB')){			
+									var dob = u.DOB.split('-');
+									u.DOB = '';
+									if(dob.length > 2)
+										u.DOB = dob[2] + '/' + dob[1] + '/' + dob[0];
+								}
+								rt.push(u);
+							});
+						}
+
 						if(labour.length > 0)
-							res.json(common.getResponses('MNS020', labour));//removefield
+							res.json(common.getResponses('MNS020', rt));//removefield
 						else
-							res.json(common.getResponses('MNS032', labour));//removefield
+							res.json(common.getResponses('MNS032', rt));//removefield
 				  	});
 				});
 			}else

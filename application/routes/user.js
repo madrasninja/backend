@@ -118,7 +118,25 @@ function User() {
 		}
 		self.db.connect((db) => {
 			db.collection('user').aggregate(lookups, (err, user) => {
-				res.json(common.getResponses('MNS020', user));
+
+				var rt = [];
+				if(user.length > 0){
+					user.forEach((u, k) => {
+						if(u.hasOwnProperty('avatar'))
+							u.avatar = config.liveUrl + 'image/avatar/' + u.avatar;
+						if(u.hasOwnProperty('Id_Prof'))
+							u.Id_Prof = config.liveUrl + 'image/avatar/' + u.Id_Prof;
+						if(u.hasOwnProperty('DOB')){			
+							var dob = u.DOB.split('-');
+							u.DOB = '';
+							if(dob.length > 2)
+								u.DOB = dob[2] + '/' + dob[1] + '/' + dob[0];
+						}
+						rt.push(u);
+					});
+				}
+
+				res.json(common.getResponses('MNS020', rt));
 		  	});
 		});
 	};
@@ -314,6 +332,16 @@ function User() {
 		}
 		var token = req.accessToken;
 		var user = req.accessUser;
+		if(user.hasOwnProperty('avatar'))
+			user.avatar = config.liveUrl + 'image/avatar/' + user.avatar;
+		if(user.hasOwnProperty('Id_Prof'))
+			user.Id_Prof = config.liveUrl + 'image/avatar/' + user.Id_Prof;
+		if(user.hasOwnProperty('DOB')){			
+			var dob = user.DOB.split('-');
+			user.DOB = '';
+			if(dob.length > 2)
+				user.DOB = dob[2] + '/' + dob[1] + '/' + dob[0];
+		}
 		delete user.password;
 		delete user.accessToken;
 		delete user.Verification_Mail;

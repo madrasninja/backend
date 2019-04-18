@@ -119,7 +119,20 @@ function Routes(app){
 		if (fs.existsSync(imgPath))
 			res.sendFile(path.resolve(imgPath));
 		else
+			res.status(404).send('404 Error');
+	});
+
+	app.get('/docs/labour_docs/:doc', function(req, res){
+
+		if(!req.params.hasOwnProperty('doc')){
 			res.send('404 Error');
+			return;
+		}
+		var imgPath = __dirname + '/../uploads/labour_docs/' + req.params.doc;
+		if (fs.existsSync(imgPath))
+			res.sendFile(path.resolve(imgPath));
+		else
+			res.status(404).send('404 Error');
 	});
 }
 
