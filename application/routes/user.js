@@ -125,7 +125,7 @@ function User() {
 						if(u.hasOwnProperty('avatar'))
 							u.avatar = config.liveUrl + 'image/avatar/' + u.avatar;
 						if(u.hasOwnProperty('Id_Prof'))
-							u.Id_Prof = config.liveUrl + 'image/avatar/' + u.Id_Prof;
+							u.Id_Prof = config.liveUrl + 'docs/labour_docs/' + u.Id_Prof;
 						if(u.hasOwnProperty('DOB')){			
 							var dob = u.DOB.split('-');
 							if(dob.length > 2)
@@ -334,7 +334,7 @@ function User() {
 		if(user.hasOwnProperty('avatar'))
 			user.avatar = config.liveUrl + 'image/avatar/' + user.avatar;
 		if(user.hasOwnProperty('Id_Prof'))
-			user.Id_Prof = config.liveUrl + 'image/avatar/' + user.Id_Prof;
+			user.Id_Prof = config.liveUrl + 'docs/labour_docs/' + user.Id_Prof;
 		if(user.hasOwnProperty('DOB')){			
 			var dob = user.DOB.split('-');
 			if(dob.length > 2)

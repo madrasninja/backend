@@ -402,7 +402,7 @@ const Booking = function() {
 									if(l.hasOwnProperty('avatar'))
 										l.avatar = config.liveUrl + 'image/avatar/' + l.avatar;
 									if(l.hasOwnProperty('Id_Prof'))
-										l.Id_Prof = config.liveUrl + 'image/avatar/' + l.Id_Prof;
+										l.Id_Prof = config.liveUrl + 'docs/labour_docs/' + l.Id_Prof;
 									if(l.hasOwnProperty('DOB')){			
 										var dob = l.DOB.split('-');
 										if(dob.length > 2)
@@ -538,7 +538,7 @@ const Booking = function() {
 								if(u.hasOwnProperty('avatar'))
 									u.avatar = config.liveUrl + 'image/avatar/' + u.avatar;
 								if(u.hasOwnProperty('Id_Prof'))
-									u.Id_Prof = config.liveUrl + 'image/avatar/' + u.Id_Prof;
+									u.Id_Prof = config.liveUrl + 'docs/labour_docs/' + u.Id_Prof;
 								if(u.hasOwnProperty('DOB')){			
 									var dob = u.DOB.split('-');
 									if(dob.length > 2)
