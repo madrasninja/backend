@@ -122,7 +122,7 @@ function Labour() {
 		}
 
 		console.log(req.files);
-		console.lo(res.body);
+		console.log(res.body);
 
 		var newUser = {
 			First_Name: req.body.First_Name,
