@@ -121,9 +121,6 @@ function Labour() {
 			return;
 		}
 
-		console.log(req.files);
-		console.log(req.body);
-
 		var newUser = {
 			First_Name: req.body.First_Name,
 			Last_Name: typeof req.body.Last_Name != 'undefined' ? req.body.Last_Name : '',
