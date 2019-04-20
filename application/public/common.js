@@ -197,6 +197,16 @@ var responses = [
 			code: 'MNS038',
 			message: 'File type miss match. Must upload png, jpg, jpeg',
 			data: {}
+	},
+	{
+			code: 'MNS039',
+			message: 'Incorrect User Id',
+			data: {}
+	},
+	{
+			code: 'MNS040',
+			message: 'User Deleted Successfull',
+			data: {}
 	}
 ];
 

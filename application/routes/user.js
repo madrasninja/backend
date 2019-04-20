@@ -144,6 +144,7 @@ function User() {
 		if(typeof req.body.email == 'undefined' ||
 			typeof req.body.password == 'undefined'){
 			res.json(common.getResponses('MNS003', {}));
+			return;
 		}
 
 		var cond = {
@@ -153,7 +154,8 @@ function User() {
 						{Mobile_Number: req.body.email}
 					]
 				},
-				{password: common.MD5(req.body.password)}
+				{password: common.MD5(req.body.password)},
+				{isDeleted: {$ne: 1}}
 			]
 		};
 		self.db.get('user', cond, (data) => {
@@ -347,7 +349,7 @@ function User() {
 	};
 
 	this.isValidAccessToken = function(token, cb){
-		self.db.get('user', {accessToken: {$all: [token]}}, (data) => {
+		self.db.get('user', {accessToken: {$all: [token]}, isDeleted: {$ne: 1}}, (data) => {
 			if(data.length > 0)
 			    cb(true, data[0]);
 			else
@@ -410,6 +412,7 @@ function User() {
 					isActivated: 1,
 					Verification_Mail: {token: '', gtime: ''}
 				};
+				self.mailForPasswordChange(data[0].Email_Id);
 				self.db.update('user', {_id: data[0]._id}, UPD, (err, result) => {
 					res.json(common.getResponses('MNS028', {}));
 				});
@@ -448,9 +451,37 @@ function User() {
 			password: common.MD5(req.body.New_Password)
 		};
 		self.db.update('user', {_id: req.accessUser._id}, UPD , (err, result) => {
+			self.mailForPasswordChange(req.accessUser.Email_Id);
 			res.json(common.getResponses('MNS028', {}));
 		});
 
+	};
+
+	this.mailForPasswordChange = (UEmail) => {
+
+		var hitSend = function(settings, TO, subject){
+			var title = settings.length > 0 ? settings[0].title : '';
+			var adminMail = settings.length > 0 ?
+				settings[0].smtp_config.auth.user : config.smtp_config.auth.user;
+			var content = '<h3>'+title+'</h3>';
+			content += '<p>Your Password has been changed</p>'; 
+			content += '<p>Thanks</p><p>Madras Ninja Bot</p>';
+			self.smtp.getFile({title: title, content: content}, (d) => {
+				var mail = {
+				    from: adminMail,
+				    to: TO,
+				    subject: subject,
+				    html: d.html
+				};
+				self.smtp.sendMail(mail, (err, res) => {
+					if (err) {console.log(err);}
+				});
+			});
+		};
+
+		self.db.get('settings', {}, (settings) => {
+			hitSend(settings, UEmail, 'Password Updated');
+		});			
 	};
 
 	this.updateUser = function(req, res) {
@@ -516,6 +547,55 @@ function User() {
 		self.db.update('user', {_id: req.accessUser._id}, UPD, (err, result) => {
 			res.json(common.getResponses('MNS002', {avatarDir: config.liveUrl + 'image/avatar/'}));
 		});
+	};
+
+	this.deleteUser = function(req, res) {
+		if(!req.hasOwnProperty('accessToken') || !req.hasOwnProperty('accessUser')){
+			res.json(common.getResponses('MNS005', {}));
+			return;
+		}
+
+		var isAdmin = req.accessUser.User_Type == common.getUserType(0) ||
+			req.accessUser.User_Type == common.getUserType(1);
+
+		if(isAdmin && typeof req.params.UID == 'undefined'){
+			res.json(common.getResponses('MNS003', {}));
+			return;
+		}
+
+		var $wh = {_id: isAdmin ? req.params.UID : req.accessUser._id};
+		self.db.update('user', $wh, {isDeleted: 1}, (err, result) => {
+			if(result.matchedCount > 0)
+				res.json(common.getResponses('MNS040', {}));
+			else
+				res.json(common.getResponses('MNS039', {}));
+		});
+		
+	};
+
+	this.makeUsAdmin = function(req, res) {
+		if(!req.hasOwnProperty('accessToken') || !req.hasOwnProperty('accessUser')){
+			res.json(common.getResponses('MNS005', {}));
+			return;
+		}
+
+		if(req.accessUser.User_Type != common.getUserType(0)){
+			res.json(common.getResponses('MNS037', {}));
+			return;
+		}
+
+		if(typeof req.params.UID == 'undefined'){
+			res.json(common.getResponses('MNS003', {}));
+			return;
+		}
+		
+		self.db.update('user', {_id: req.params.UID}, {User_Type : common.getUserType(1)}, (err, result) => {
+			if(result.matchedCount > 0)
+				res.json(common.getResponses('MNS020', {}));
+			else
+				res.json(common.getResponses('MNS039', {}));
+		});
+
 	};
 }
 

@@ -129,6 +129,10 @@ function Routes(app){
 	app.post('/changepassword', User.auth(), User.changePassword);
 	app.post('/updateuser', User.auth(), upload.single('avatar'), User.updateUser);
 
+	app.get('/deleteuser/:UID', User.auth(), User.deleteUser);
+	app.get('/deleteuser', User.auth(), User.deleteUser);
+	app.get('/makeusadmin/:UID', User.auth(), User.makeUsAdmin);
+
 	app.get('/image/avatar/:img', function(req, res){
 
 		if(!req.params.hasOwnProperty('img')){
