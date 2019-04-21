@@ -110,7 +110,7 @@ function Labour() {
 			return;
 		}
 
-		if(isAdd && typeof req.body.Mobile_Number == 'undefined'){
+		if(typeof req.body.Mobile_Number == 'undefined'){
 			sendResponse(common.getResponses('MNS022', {}));
 			return;				
 		}
@@ -125,6 +125,7 @@ function Labour() {
 			First_Name: req.body.First_Name,
 			Last_Name: typeof req.body.Last_Name != 'undefined' ? req.body.Last_Name : '',
 			Email_Id: req.body.Email_Id,
+			Mobile_Number: req.body.Mobile_Number,
 			Alternate_Mobile_Number: typeof req.body.Alternate_Mobile_Number != 'undefined' ?
 					req.body.Alternate_Mobile_Number : '',
 			Locality_ID: req.body.Locality_ID,
@@ -141,27 +142,32 @@ function Labour() {
 
 	    var cond = {};
 	    if(isAdd){
-	    	newUser._id = common.getMongoObjectId();
-	    	newUser.Mobile_Number = req.body.Mobile_Number;
+	    	newUser._id = common.getMongoObjectId();	    	
 	    	cond = {$or: [
 				{Email_Id: newUser.Email_Id},
 				{Mobile_Number: newUser.Mobile_Number}
 			]};
-	    }else
-	    	cond = {Email_Id: newUser.Email_Id, _id: {$ne: req.body._id}};
+	    }else{
+	    	cond = {
+	    		$and: [
+		    		{$or: [
+						{Email_Id: newUser.Email_Id},
+						{Mobile_Number: newUser.Mobile_Number}
+					]},
+					{_id: {$ne: req.body._id}}
+				]
+			};
+	    }
 
 	    self.db.get('user', cond, existUser => {
 	    	if(existUser.length > 0){
 	    		existUser = existUser[0];
-	    		if(isAdd){
-	    			if(existUser.Email_Id == newUser.Email_Id)
-	    				sendResponse(common.getResponses('MNS015', {}));
-	    			else if(existUser.Mobile_Number == req.body.Mobile_Number)
-	    				sendResponse(common.getResponses('MNS016', {}));
-	    			else
-	    				sendResponse(common.getResponses('MNS030', {}));
-	    		}else
-	    			sendResponse(common.getResponses('MNS015', {}));
+    			if(existUser.Email_Id == newUser.Email_Id)
+    				sendResponse(common.getResponses('MNS015', {}));
+    			else if(existUser.Mobile_Number == req.body.Mobile_Number)
+    				sendResponse(common.getResponses('MNS016', {}));
+    			else
+    				sendResponse(common.getResponses('MNS030', {}));
 	    	}else{
 	    		if(isAdd){
 	    			self.db.insert('user', newUser, (err, result) => {
