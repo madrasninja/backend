@@ -119,7 +119,7 @@ function User() {
 		self.db.connect((db) => {
 			db.collection('user').aggregate(lookups, (err, user) => {
 
-				var rt = [];
+				var rt = {activeUser: [], inactiveUser: []};
 				if(user.length > 0){
 					user.forEach((u, k) => {
 						if(u.hasOwnProperty('avatar'))
@@ -131,7 +131,14 @@ function User() {
 							if(dob.length > 2)
 								u.DOB = dob[2] + '/' + dob[1] + '/' + dob[0];
 						}
-						rt.push(u);
+						if(typeof u.isDeleted != 'undefined'){
+							if(u.isDeleted == 1)
+								rt.inactiveUser.push(u);
+							else
+								rt.activeUser.push(u);
+						}
+						else
+							rt.activeUser.push(u);
 					});
 				}
 
