@@ -280,7 +280,7 @@ function User() {
 				var mail = {
 				    from: adminMail,
 				    to: TO,
-				    subject: subject,
+				    subject: "Madras Ninja - " + subject,
 				    html: d.html
 				};
 				self.smtp.sendMail(mail, (err, res) => {
@@ -477,7 +477,7 @@ function User() {
 				var mail = {
 				    from: adminMail,
 				    to: TO,
-				    subject: subject,
+				    subject: "Madras Ninja - " + subject,
 				    html: d.html
 				};
 				self.smtp.sendMail(mail, (err, res) => {
