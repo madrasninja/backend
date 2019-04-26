@@ -104,19 +104,12 @@ const Booking = function() {
 				Session_Time: req.body.Session_Time
 			};
 
-
-			var cryp = crypto.createHash('sha512');
-			var text = config.PayUMoney.key+'|'+insertData.ID+'|'+config.PayUMoney.testAmount+'|'+config.PayUMoney.productInfo+'|'+User.First_Name+'|'+User.Email_Id+'|||||'+config.PayUMoney.udf5+'||||||'+config.PayUMoney.salt;
-			cryp.update(text);
-			var hash = cryp.digest('hex');
-
 			insertData = JSON.parse(JSON.stringify(insertData));
 			self.db.insert('booking', insertData, (err, result) => {
 				if(result.insertedCount == 1){
 					self.sendEmailToUser(insertData.ID, req.body.Email_Id);
 					self.isTriggerAutomation = true;
-					res.json(common.getResponses('MNS010', {Booking_ID: insertData.ID,
-					hashKey: hash}));					
+					res.json(common.getResponses('MNS010', {Booking_ID: insertData.ID}));					
 				}
 				else
 					res.json(common.getResponses('MNS019', {}));
@@ -144,6 +137,76 @@ const Booking = function() {
 				afterUserFetched(user[0]);
 		});
 	};
+	this.getPaymentHash = function(req, res){
+
+		if(typeof req.body.Booking_ID == 'undefined'){
+			res.json(common.getResponses('MNS003', {}));
+			return;
+		}
+
+		var $wh = {ID: req.body.Booking_ID};
+		var lookups = [
+			{
+				$lookup: {
+					from: 'user',
+					localField: 'User_ID',
+					foreignField: '_id',
+					as: 'user'
+				}
+			},
+			{
+				$lookup: {
+					from: 'service_type',
+					localField: 'Service_Type_ID',
+					foreignField: '_id',
+					as: 'service_type'
+				}
+			},
+			{
+				$replaceRoot: {
+			        newRoot: {
+			            $mergeObjects: [		            	
+			            	"$$ROOT",
+			            	{user: { $arrayElemAt: [ "$user", 0 ] }},
+			            	{service_type: { $arrayElemAt: [ "$service_type", 0 ] }}
+			            ]
+			        }
+			    }
+		    },
+			{ $match: $wh}
+		];	
+
+		self.db.connect((db) => {
+			db.collection('booking').aggregate(lookups, (err, book) => {
+				if(book.length > 0){
+					book = book[0];
+
+					var crypConfig = {
+						key: config.PayUMoney.key,
+						txnid: req.body.Booking_ID,
+						amount: book.service_type.amount,
+						pinfo: book.service_type.name,
+						fname: book.user.First_Name,
+						email: book.user.Email_Id,
+						mobile: book.user.Mobile_Number,
+						udf5: config.PayUMoney.udf5
+					};
+
+					var cryp = crypto.createHash('sha512');
+					var text = crypConfig.key+'|'+crypConfig.txnid+'|'
+						+crypConfig.amount+'|'+crypConfig.pinfo+'|'+crypConfig.fname+'|'
+						+crypConfig.email+'|||||'+crypConfig.udf5+'||||||'
+						+config.PayUMoney.salt;
+					cryp.update(text);
+					var hash = cryp.digest('hex');
+					crypConfig.hashKey = hash;
+					res.json(common.getResponses('MNS020', crypConfig));
+				}else
+					res.json(common.getResponses('MNS031', {}));
+			});
+		});	    
+		
+	};
 	this.onPaymentSuccess = function(req, res){
 
 		if(typeof req.body.Booking_ID == 'undefined' ||
@@ -166,11 +229,20 @@ const Booking = function() {
 				}
 			},
 			{
+				$lookup: {
+					from: 'service_type',
+					localField: 'Service_Type_ID',
+					foreignField: '_id',
+					as: 'service_type'
+				}
+			},
+			{
 				$replaceRoot: {
 			        newRoot: {
 			            $mergeObjects: [		            	
 			            	"$$ROOT",
-			            	{user: { $arrayElemAt: [ "$user", 0 ] }}
+			            	{user: { $arrayElemAt: [ "$user", 0 ] }},
+			            	{service_type: { $arrayElemAt: [ "$service_type", 0 ] }}
 			            ]
 			        }
 			    }
@@ -182,13 +254,13 @@ const Booking = function() {
 			var key = config.PayUMoney.key;
 			var salt = config.PayUMoney.salt;
 			var txnid = book.ID;
-			var amount = config.PayUMoney.testAmount;
+			var amount = book.service_type.amount;
 			var email = book.user.Email_Id;
 			var udf5 = config.PayUMoney.udf5;
 			var mihpayid = req.body.mihpayid;
 			var status = req.body.paymentResponseStatus;
 			var resphash = req.body.respHash;
-			var productInfo = config.PayUMoney.productInfo;
+			var productInfo = book.service_type.name;
 			var First_Name = book.user.First_Name;
 			
 			var keyString =	key+'|'+txnid+'|'+amount+'|'+productInfo+'|'+First_Name+'|'+email+'|||||'+udf5+'|||||';
