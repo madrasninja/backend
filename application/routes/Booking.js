@@ -49,7 +49,7 @@ const Booking = function() {
 	});*/
 	this.createCustomer = function(user, cb){
 		self.db.insert('user', user, (err, result) => {
-	    	cb(result.insertedId);
+	    	cb(user);
 	    });
 	};
 	this.onSubmitBooking = function(req, res){
@@ -89,11 +89,11 @@ const Booking = function() {
 			req.body.Session_Time = sb;
 		}
 
-		var afterUserFetched = (User_ID) => {
+		var afterUserFetched = (User) => {
 
 			var insertData = {
 				ID: 'MNS' + common.uniqueid(),
-				User_ID: User_ID,
+				User_ID: User._id,
 				Locality_ID: req.body.Locality_ID,
 				Service_Type_ID: req.body.Service_Type_ID,
 				Address: req.body.Address,
@@ -103,12 +103,20 @@ const Booking = function() {
 				Labour_ID: [],
 				Session_Time: req.body.Session_Time
 			};
+
+
+			var cryp = crypto.createHash('sha512');
+			var text = config.PayUMoney.key+'|'+insertData.ID+'|'+config.PayUMoney.testAmount+'|'+config.PayUMoney.productInfo+'|'+User.First_Name+'|'+User.Email_Id+'|||||'+config.PayUMoney.udf5+'||||||'+config.PayUMoney.salt;
+			cryp.update(text);
+			var hash = cryp.digest('hex');
+
 			insertData = JSON.parse(JSON.stringify(insertData));
 			self.db.insert('booking', insertData, (err, result) => {
 				if(result.insertedCount == 1){
 					self.sendEmailToUser(insertData.ID, req.body.Email_Id);
 					self.isTriggerAutomation = true;
-					res.json(common.getResponses('MNS010', {Booking_ID: insertData.ID}));					
+					res.json(common.getResponses('MNS010', {Booking_ID: insertData.ID,
+					hashKey: hash}));					
 				}
 				else
 					res.json(common.getResponses('MNS019', {}));
@@ -133,70 +141,102 @@ const Booking = function() {
 				};
 				self.createCustomer(newUser, afterUserFetched);
 			}else
-				afterUserFetched(user[0]._id);
+				afterUserFetched(user[0]);
 		});
 	};
-	this.getPaymentHash = function(req, res){
-		var data = req.body;
-		var cryp = crypto.createHash('sha512');
-		var text = data.key+'|'+data.txnid+'|'+data.amount+'|'+data.pinfo+'|'+data.fname+'|'+data.email+'|||||'+data.udf5+'||||||'+data.salt;
-		cryp.update(text);
-		var hash = cryp.digest('hex');
-	    res.json(common.getResponses('MNS020', {hash: hash}));
-	},
 	this.onPaymentSuccess = function(req, res){
-		var key = req.body.key;
-		var salt = req.body.salt;
-		var txnid = req.body.txnid;
-		var amount = req.body.amount;
-		var productinfo = req.body.productinfo;
-		var firstname = req.body.firstname;
-		var email = req.body.email;
-		var udf5 = req.body.udf5;
-		var mihpayid = req.body.mihpayid;
-		var status = req.body.status;
-		var resphash = req.body.hash;
-		
-		var keyString 		=  	key+'|'+txnid+'|'+amount+'|'+productinfo+'|'+firstname+'|'+email+'|||||'+udf5+'|||||';
-		var keyArray 		= 	keyString.split('|');
-		var reverseKeyArray	= 	keyArray.reverse();
-		var reverseKeyString=	salt+'|'+status+'|'+reverseKeyArray.join('|');
-		
-		var cryp = crypto.createHash('sha512');	
-		cryp.update(reverseKeyString);
-		var calchash = cryp.digest('hex');
-		var details = {key: key,salt: salt,txnid: txnid,amount: amount, productinfo: productinfo, 
-		firstname: firstname, email: email, mihpayid : mihpayid, status: status,resphash: resphash,msg:msg};
-		req.body.Booking_ID = txnid;
-		
-		if(typeof req.body.Booking_ID != 'string' || typeof req.body.Payment_Response != 'string'){
+
+		if(typeof req.body.Booking_ID == 'undefined' ||
+			typeof req.body.Payment_Response == 'undefined' ||
+			typeof req.body.mihpayid == 'undefined' ||
+			typeof req.body.paymentResponseStatus == 'undefined' ||
+			typeof req.body.respHash == 'undefined'){
 			res.json(common.getResponses('MNS003', {}));
 			return;
 		}
-		
-		var pf = req.body.Payment_Response;
-		var Payment_Status = 0;
-		if(pf.toLowerCase() != "cancel"){
-			if(calchash == resphash)
-				Payment_Status = 1;
-			else
-				Payment_Status = 3;
-		}else
-			Payment_Status = 2;
 
-		var UPD = {Payment_Status: Payment_Status, Status_ID: 1,
-			Payment_Details: details};
-		self.db.update('booking', {ID: req.body.Booking_ID}, UPD, (err, result) => {
-			var response = common.getResponses('MNS031', {});
-			if(Payment_Status == 1 && parseInt(result.result.nModified) === 1){
-				response = common.getResponses('MNS011', {});
-				/*self.sendEmailToUser(req.body.Booking_ID);*/
-			}
-			else if(Payment_Status == 2)
-				response = common.getResponses('MNS012', {});
-			else if(Payment_Status == 3)
-				response = common.getResponses('MNS013', {});
-			res.json(response);
+		var $wh = {ID: req.body.Booking_ID};
+		var lookups = [
+			{
+				$lookup: {
+					from: 'user',
+					localField: 'User_ID',
+					foreignField: '_id',
+					as: 'user'
+				}
+			},
+			{
+				$replaceRoot: {
+			        newRoot: {
+			            $mergeObjects: [		            	
+			            	"$$ROOT",
+			            	{user: { $arrayElemAt: [ "$user", 0 ] }}
+			            ]
+			        }
+			    }
+		    },
+			{ $match: $wh}
+		];		
+
+		var checkProcess = function(book) {
+			var key = config.PayUMoney.key;
+			var salt = config.PayUMoney.salt;
+			var txnid = book.ID;
+			var amount = config.PayUMoney.testAmount;
+			var email = book.user.Email_Id;
+			var udf5 = config.PayUMoney.udf5;
+			var mihpayid = req.body.mihpayid;
+			var status = req.body.paymentResponseStatus;
+			var resphash = req.body.respHash;
+			var productInfo = config.PayUMoney.productInfo;
+			var First_Name = book.user.First_Name;
+			
+			var keyString =	key+'|'+txnid+'|'+amount+'|'+productInfo+'|'+First_Name+'|'+email+'|||||'+udf5+'|||||';
+			var keyArray = keyString.split('|');
+			var reverseKeyArray	= keyArray.reverse();
+			var reverseKeyString = salt+'|'+status+'|'+reverseKeyArray.join('|');
+			
+			var cryp = crypto.createHash('sha512');	
+			cryp.update(reverseKeyString);
+			var calchash = cryp.digest('hex');
+
+			var details = {amount: amount, email: email,
+			 mihpayid : mihpayid, status: status,resphash: resphash};
+			
+			var pf = req.body.Payment_Response;
+			var Payment_Status = 0;
+			if(pf.toLowerCase() != "cancel"){
+				if(calchash == resphash)
+					Payment_Status = 1;
+				else
+					Payment_Status = 3;
+			}else
+				Payment_Status = 2;
+
+			var UPD = {Payment_Status: Payment_Status, Status_ID: 1,
+				Payment_Details: details};
+			self.db.update('booking', $wh, UPD, (err, result) => {
+				var response = common.getResponses('MNS031', {});
+				if(Payment_Status == 1 && parseInt(result.result.nModified) === 1){
+					response = common.getResponses('MNS011', {});
+					/*self.sendEmailToUser(book.ID, book.user.Email_Id);*/
+				}
+				else if(Payment_Status == 2)
+					response = common.getResponses('MNS012', {});
+				else if(Payment_Status == 3)
+					response = common.getResponses('MNS013', {});
+				res.json(response);
+			});
+		};
+
+		self.db.connect((db) => {
+			db.collection('booking').aggregate(lookups, (err, booked) => {
+				if(booked.length > 0){
+					booked = booked[0];
+					checkProcess(booked);
+				}else
+					res.json(common.getResponses('MNS031', {}));
+			});
 		});
 	};
 	this.onPaymentFinished = function(req, res) {

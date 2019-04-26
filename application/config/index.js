@@ -21,6 +21,13 @@ var main = {
 	        pass: "1234.Smix"
 	    }
 	},
+	PayUMoney: {
+		key: 'pVxlltPH',
+		salt: 'IOveTryfby',
+		udf5: 'BOLT_KIT_NODE_JS',
+		productInfo: 'Madras Ninja Service',
+		testAmount: '20.00'
+	},
 	dbName: 'madrasninja',
 	liveUrl: 'https://api.madrasninja.com/',
 	session_time: 999999999999,

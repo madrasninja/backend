@@ -100,7 +100,7 @@ function Routes(app){
 	app.post('/bookservice', User.auth(), Booking.onSubmitBooking);
 	app.get('/cancelbooking/:BID', User.auth(), Booking.cancelBooking);
 
-	app.post('/proceedforpayment', User.auth(), Booking.onPaymentFinished);
+	app.post('/proceedforpayment', User.auth(), Booking.onPaymentSuccess);
 
 	app.get('/getbookinglist/:offset', User.auth(), Booking.getBookingList);
 
