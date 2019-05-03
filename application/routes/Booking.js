@@ -184,7 +184,7 @@ const Booking = function() {
 					var crypConfig = {
 						key: config.PayUMoney.key,
 						txnid: req.body.Booking_ID, 
-						hash: $('#hash').val(),
+						hash: '',
 						amount: book.service_type.amount,
 						firstname: book.user.First_Name,
 						email: book.user.Email_Id,
