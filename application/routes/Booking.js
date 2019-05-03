@@ -185,11 +185,13 @@ const Booking = function() {
 						key: config.PayUMoney.key,
 						txnid: req.body.Booking_ID,
 						amount: book.service_type.amount,
-						pinfo: book.service_type.name,
-						fname: book.user.First_Name,
+						productinfo: book.service_type.name,
+						firstname: book.user.First_Name,
 						email: book.user.Email_Id,
-						mobile: book.user.Mobile_Number,
-						udf5: config.PayUMoney.udf5
+						phone: book.user.Mobile_Number,
+						udf5: config.PayUMoney.udf5,
+						surl: '/',
+						furl: '/'
 					};
 
 					var cryp = crypto.createHash('sha512');
@@ -199,7 +201,7 @@ const Booking = function() {
 						+config.PayUMoney.salt;
 					cryp.update(text);
 					var hash = cryp.digest('hex');
-					crypConfig.hashKey = hash;
+					crypConfig.hash = hash;
 					res.json(common.getResponses('MNS020', crypConfig));
 				}else
 					res.json(common.getResponses('MNS031', {}));
@@ -285,7 +287,7 @@ const Booking = function() {
 			}else
 				Payment_Status = 2;
 
-			var UPD = {Payment_Status: Payment_Status, Status_ID: 1,
+			var UPD = {Payment_Status: Payment_Status, Status_ID: Payment_Status == 1 ? 1 : 0,
 				Payment_Details: details};
 			self.db.update('booking', $wh, UPD, (err, result) => {
 				var response = common.getResponses('MNS031', {});
