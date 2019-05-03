@@ -307,7 +307,12 @@ function User() {
 				res.json(common.getResponses('MNS007', {}));
 			}
 			else if(isValid && !isExpired){
-				self.db.update('user', {_id: data[0]._id}, {isActivated: 1, Verification_Mail: {}}, (err, result) => {
+				var UPD = {isActivated: 1, Verification_Mail: {}};
+				if(typeof req.query.reset != 'undefined'){
+					if(req.query.reset == 'false')
+						delete UPD.Verification_Mail;
+				}
+				self.db.update('user', {_id: data[0]._id}, UPD, (err, result) => {
 					res.json(common.getResponses('MNS027', {}));
 				});
 			}else{
@@ -417,7 +422,7 @@ function User() {
 				var UPD = {
 					password: common.MD5(req.body.New_Password),
 					isActivated: 1,
-					Verification_Mail: {token: '', gtime: ''}
+					Verification_Mail: {}
 				};
 				self.mailForPasswordChange(data[0].Email_Id);
 				self.db.update('user', {_id: data[0]._id}, UPD, (err, result) => {
