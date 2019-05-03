@@ -197,7 +197,7 @@ const Booking = function() {
 
 					var cryp = crypto.createHash('sha512');
 					var text = crypConfig.key+'|'+crypConfig.txnid+'|'
-						+crypConfig.amount+'|'+crypConfig.pinfo+'|'+crypConfig.fname+'|'
+						+crypConfig.amount+'|'+crypConfig.productinfo+'|'+crypConfig.firstname+'|'
 						+crypConfig.email+'|||||'+crypConfig.udf5+'||||||'
 						+config.PayUMoney.salt;
 					cryp.update(text);
