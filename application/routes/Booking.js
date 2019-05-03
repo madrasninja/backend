@@ -183,14 +183,15 @@ const Booking = function() {
 
 					var crypConfig = {
 						key: config.PayUMoney.key,
-						txnid: req.body.Booking_ID,
+						txnid: req.body.Booking_ID, 
+						hash: $('#hash').val(),
 						amount: book.service_type.amount,
-						productinfo: book.service_type.name,
 						firstname: book.user.First_Name,
 						email: book.user.Email_Id,
 						phone: book.user.Mobile_Number,
+						productinfo: book.service_type.name,
 						udf5: config.PayUMoney.udf5,
-						surl: '/',
+						surl : '/',
 						furl: '/'
 					};
 
