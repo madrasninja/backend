@@ -685,6 +685,13 @@ const Booking = function() {
 			res.json(common.getResponses('MNS003', {}));
 			return;
 		}
+
+		if( !(req.accessUser.User_Type == common.getUserType(0) ||
+			req.accessUser.User_Type == common.getUserType(1)) ){
+			res.json(common.getResponses('MNS005', {}));
+			return;
+		}
+		
 		var Labour_ID = typeof req.body.Labour_ID == 'string' ? 
 			[req.body.Labour_ID] : req.body.Labour_ID;
 		var UPD = {Labour_ID: Labour_ID, Status_ID: 2};

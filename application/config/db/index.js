@@ -2,7 +2,7 @@
 const MongoClient = require('mongodb').MongoClient;
 const assert = require('assert');
 
-const url = 'mongodb://localhost:27017';
+const url = 'mongodb://karthisgk:sgk97sgk@api.madrasninja.com:27017';
 const dbName = 'madrasninja';
 var collection = require('./collections.js');
 
