@@ -161,7 +161,6 @@ function User() {
 						{Mobile_Number: req.body.email}
 					]
 				},
-				{password: common.MD5(req.body.password)},
 				{isDeleted: {$ne: 1}}
 			]
 		};
@@ -169,14 +168,29 @@ function User() {
 			if(data.length == 0){
 				res.json(common.getResponses('MNS004', {}));
 			}else{
-				if(data[0].isActivated == 1){
+
+				var ind = -1;
+				data.forEach((usr, k) => {
+					if(typeof usr.password != 'undefined'){
+						if(usr.password == common.MD5(req.body.password))
+							ind = k;
+					}
+				});
+
+				if(ind == -1 || ind >= data.length){
+					res.json(common.getResponses('MNS034', {}));
+					return;
+				}
+
+				var matchUser = data[ind];
+				if(matchUser.isActivated == 1){
 					var token = common.gToken(30);				
-					var tokens = !data[0].hasOwnProperty('accessToken') || typeof data[0].accessToken.length == 'undefined' 
-					|| typeof data[0].accessToken == 'string' ? [] : data[0].accessToken;
+					var tokens = !matchUser.hasOwnProperty('accessToken') || typeof matchUser.accessToken.length == 'undefined' 
+					|| typeof matchUser.accessToken == 'string' ? [] : matchUser.accessToken;
 					tokens.push(token);
-					self.db.update('user', {_id: data[0]._id}, {accessToken: tokens}, (err, result) => {
+					self.db.update('user', {_id: matchUser._id}, {accessToken: tokens}, (err, result) => {
 						res.json(common.getResponses('MNS020', {accessToken: token,
-						User_Type: data[0].User_Type}));						
+						User_Type: matchUser.User_Type}));						
 					});
 				}else
 					res.json(common.getResponses('MNS023', {}));
@@ -236,7 +250,7 @@ function User() {
 						res.json(common.getResponses('MNS030', {}));
 				}else{
 					var link = common.frontEndUrl + "setpassword?token="
-					+ verifyToken;	
+					+ verifyToken + "&reset=false";	
 					var UPD = {Verification_Mail: Verification_Mail};
 					self.db.update('user', {_id: data[0]._id}, UPD, (err, result) => {
 						self.verificationMail(link, data[0].Email_Id, "Generate Password");
@@ -386,7 +400,7 @@ function User() {
 					gtime: common.current_time()
 				};
 				var link = common.frontEndUrl + "setpassword?token="
-				+ verifyToken;	
+				+ verifyToken + "&reset=false";	
 				var UPD = {Verification_Mail: Verification_Mail};
 				self.db.update('user', {_id: data[0]._id}, UPD, (err, result) => {
 					self.verificationMail(link, data[0].Email_Id, "Reset Password");
