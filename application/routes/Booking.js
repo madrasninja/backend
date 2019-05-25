@@ -634,7 +634,9 @@ const Booking = function() {
 								{User_Type: common.getUserType(2)},
 								{'Service_Time.From': { $lte: reqFrom}},
 								{'Service_Time.To': { $gte: reqTo}},
-								{$or: $superservice}
+								{$or: $superservice},
+								{'Last_Service.From': {$ne: data[0].Session_Time.From}},
+								{'Last_Service.To': {$ne: data[0].Session_Time.To}}
 							]
 						}
 					}
@@ -695,10 +697,24 @@ const Booking = function() {
 		var Labour_ID = typeof req.body.Labour_ID == 'string' ? 
 			[req.body.Labour_ID] : req.body.Labour_ID;
 		var UPD = {Labour_ID: Labour_ID, Status_ID: 2};
-		self.db.update('booking', {ID: req.body.Booking_ID}, UPD, (err, result) => {
-			var r = result.matchedCount > 0 ? 'MNS014' : 'MNS031';
-			res.json(common.getResponses(r, {}));
+
+		var callBack = function(){
+			self.db.update('booking', {ID: req.body.Booking_ID}, UPD, (err, result) => {
+				var r = result.matchedCount > 0 ? 'MNS014' : 'MNS031';
+				res.json(common.getResponses(r, {}));
+			});
+		}
+		self.db.get('booking', {ID: req.body.Booking_ID}, book => {
+			if(book.length > 0){
+				book = book[0];				
+				setTimeout(() => {
+					self.db.update('user', {_id: {$in: Labour_ID}}, 
+						{Last_Service: book.Session_Time},(err, result) => {});
+				}, 1000);
+				callBack();
+			}
 		});
+
 	};
 };
 
