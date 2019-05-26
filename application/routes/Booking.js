@@ -60,7 +60,6 @@ const Booking = function() {
 			typeof req.body.Locality_ID == 'undefined' ||
 			typeof req.body.Service_Type_ID == 'undefined' ||
 			typeof req.body.Address == 'undefined' ||
-			typeof req.body.Session_Time_From == 'undefined' || 
 			typeof req.body.No_Of_Staff == 'undefined'){
 			res.json(common.getResponses('MNS003', {}));
 			return;
