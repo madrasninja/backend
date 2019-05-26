@@ -167,10 +167,10 @@ const Booking = function() {
 				var isAvailable = false;
 				if(st.length > 0){
 					st = st[0];
-					if(st['s'+req.body.No_Of_Staff]){
+					if(st.timePerStaff[req.body.No_Of_Staff]) {
 						var stime = {From: req.body.Session_Time_From};
 						stime.To = common.current_time(common.addMinutes(new Date(stime.From),
-							st['s'+req.body.No_Of_Staff]));
+							st.timePerStaff[req.body.No_Of_Staff]));
 						if(stime.To.split(' ')[1] <= st.settings.Service_Time){
 							isAvailable = true;
 							callBack(stime);
