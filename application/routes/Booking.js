@@ -233,7 +233,7 @@ const Booking = function() {
 						key: config.PayUMoney.key,
 						txnid: req.body.Booking_ID, 
 						hash: '',
-						amount: book.service_type.amount,
+						amount: (parseInt(book.service_type.amount) * 3) + ".00",
 						firstname: book.user.First_Name,
 						email: book.user.Email_Id,
 						phone: book.user.Mobile_Number,
