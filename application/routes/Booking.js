@@ -47,9 +47,9 @@ const Booking = function() {
 			});
 		});
 	});*/
-	this.createCustomer = function(user, cb){
+	this.createCustomer = function(user, Session_Time, cb){
 		self.db.insert('user', user, (err, result) => {
-	    	cb(user);
+	    	cb(user, Session_Time);
 	    });
 	};
 	this.onSubmitBooking = function(req, res){
@@ -60,36 +60,36 @@ const Booking = function() {
 			typeof req.body.Locality_ID == 'undefined' ||
 			typeof req.body.Service_Type_ID == 'undefined' ||
 			typeof req.body.Address == 'undefined' ||
-			typeof req.body.Session_Time != 'object'){
+			typeof req.body.Session_Time_From == 'undefined' || 
+			typeof req.body.No_Of_Staff == 'undefined'){
 			res.json(common.getResponses('MNS003', {}));
 			return;
 		}
 
-		if(typeof req.body.Session_Time.From == 'undefined' ||
-			typeof req.body.Session_Time.To == 'undefined'){
+		if(typeof req.body.Session_Time_From == 'undefined'){
 			res.json(common.getResponses('MNS018', {}));
 			return;
 		}
 
-		if(req.body.Session_Time.From.split('/').length == 3){
-			var sb = req.body.Session_Time;
-			var fm = sb.From + ":00";
+		if(req.body.Session_Time_From.split('/').length == 3){
+			var sb = req.body.Session_Time_From;
+			var fm = sb + ":00";
 			var fromTime = fm.split(' ')[1];
 			fm = fm.split(' ')[0].split('/');
-			sb.From = fm.length == 3 ? 
+			sb = fm.length == 3 ? 
 				fm[2] + '-' + fm[1] + '-' + fm[0] + ' ' + fromTime
 				: fm.join('-') + ' ' + fromTime;
 
-			var to = sb.To + ":00";
+			/*var to = sb.To + ":00";
 			var toTime = to.split(' ')[1];
 			to = to.split(' ')[0].split('/');
 			sb.To = to.length == 3 ? 
 				to[2] + '-' + to[1] + '-' + to[0] + ' ' + toTime
-				: to.join('-') + ' ' + toTime;
-			req.body.Session_Time = sb;
+				: to.join('-') + ' ' + toTime;*/
+			req.body.Session_Time_From = sb;
 		}
 
-		var afterUserFetched = (User) => {
+		var afterUserFetched = (User, Session_Time) => {
 
 			var insertData = {
 				ID: 'MNS' + common.uniqueid(),
@@ -101,7 +101,8 @@ const Booking = function() {
 				Payment_Status: 0,
 				Payment_Details: {},
 				Labour_ID: [],
-				Session_Time: req.body.Session_Time
+				Session_Time: Session_Time,
+				No_Of_Staff: parseInt(req.body.No_Of_Staff)
 			};
 
 			insertData = JSON.parse(JSON.stringify(insertData));
@@ -116,26 +117,74 @@ const Booking = function() {
 			});
 		};
 
-		var condition = {$or: [
-			{Email_Id: req.body.Email_Id},
-			{Mobile_Number: req.body.Mobile_Number}
-		]};
-		self.db.get('user', condition, user => {
-			if(user.length == 0){
-				var newUser = {
-					_id: common.getMongoObjectId(),
-					First_Name: req.body.First_Name,
-					Last_Name: typeof req.body.Last_Name != 'undefined' ? req.body.Last_Name : '',
-					Mobile_Number: req.body.Mobile_Number,
-					Email_Id: req.body.Email_Id,
-					Alternate_Mobile_Number: typeof req.body.Alternate_Mobile_Number != 'undefined' ?
-							req.body.Alternate_Mobile_Number : '',					
-					User_Type: common.getUserType(3)
-				};
-				self.createCustomer(newUser, afterUserFetched);
-			}else
-				afterUserFetched(user[0]);
-		});
+		var callBack = function(Session_Time){
+			var condition = {$or: [
+				{Email_Id: req.body.Email_Id},
+				{Mobile_Number: req.body.Mobile_Number}
+			]};
+			self.db.get('user', condition, user => {
+				if(user.length == 0){
+					var newUser = {
+						_id: common.getMongoObjectId(),
+						First_Name: req.body.First_Name,
+						Last_Name: typeof req.body.Last_Name != 'undefined' ? req.body.Last_Name : '',
+						Mobile_Number: req.body.Mobile_Number,
+						Email_Id: req.body.Email_Id,
+						Alternate_Mobile_Number: typeof req.body.Alternate_Mobile_Number != 'undefined' ?
+								req.body.Alternate_Mobile_Number : '',					
+						User_Type: common.getUserType(3)
+					};
+					self.createCustomer(newUser, Session_Time, afterUserFetched);
+				}else
+					afterUserFetched(user[0], Session_Time);
+			});
+		};
+
+		self.db.connect((newdb) => {
+			var lookups = [
+				{
+					$lookup: {
+						from: 'settings',
+						localField: 'amount',
+						foreignField: 'Service_Cost',
+						as: 'settings'
+					}
+				},
+				{
+					$replaceRoot: {
+				        newRoot: {
+				            $mergeObjects: [		            	
+				            	"$$ROOT",
+				            	{settings: { $arrayElemAt: [ "$settings", 0 ] }}
+				            ]
+				        }
+				    }
+			    },
+				{
+					$match: {_id: req.body.Service_Type_ID}
+				}
+			];
+			newdb.collection('service_type').aggregate(lookups, (err, st) => {
+				var isAvailable = false;
+				if(st.length > 0){
+					st = st[0];
+					if(st['s'+req.body.No_Of_Staff]){
+						var stime = {From: req.body.Session_Time_From};
+						stime.To = common.current_time(common.addMinutes(new Date(stime.From),
+							st['s'+req.body.No_Of_Staff]));
+						if(stime.To.split(' ')[1] <= st.settings.Service_Time){
+							isAvailable = true;
+							callBack(stime);
+						}
+					}
+				}
+				if(!isAvailable){
+					res.json(common.getResponses('MNS041', {}));
+					return;
+				}
+			});
+		});		
+		
 	};
 	this.getPaymentHash = function(req, res){
 
@@ -703,10 +752,20 @@ const Booking = function() {
 				var r = result.matchedCount > 0 ? 'MNS014' : 'MNS031';
 				res.json(common.getResponses(r, {}));
 			});
-		}
+		};
 		self.db.get('booking', {ID: req.body.Booking_ID}, book => {
 			if(book.length > 0){
-				book = book[0];				
+				book = book[0];	
+
+				if(typeof book.No_Of_Staff != 'undefined'){
+					if(Labour_ID.length != book.No_Of_Staff){
+						var resp = common.getResponses('MNS042', {});
+						resp.message = resp.message.replace('$n', book.No_Of_Staff);
+						res.json(resp);
+						return;
+					}
+				}
+
 				setTimeout(() => {
 					self.db.update('user', {_id: {$in: Labour_ID}}, 
 						{Last_Service: book.Session_Time},(err, result) => {});

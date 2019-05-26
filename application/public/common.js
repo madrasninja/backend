@@ -95,7 +95,7 @@ var responses = [
 	},
 	{
 			code: 'MNS018',
-			message: 'Session Time From & To is Required',
+			message: 'Session Time From is Required',
 			data: {}
 	},
 	{
@@ -207,6 +207,16 @@ var responses = [
 			code: 'MNS040',
 			message: 'User Deleted Successfull',
 			data: {}
+	},
+	{
+			code: 'MNS041',
+			message: 'Service is not Available',
+			data: {}
+	},
+	{
+			code: 'MNS042',
+			message: 'Must assign $n labour',
+			data: {}
 	}
 ];
 
@@ -237,6 +247,10 @@ module.exports = {
 	},
 	addHours: function(t, h) {    
 	   t.setTime(t.getTime() + (h*60*60*1000)); 
+	   return t;   
+	},
+	addMinutes: function(t, h) {    
+	   t.setTime(t.getTime() + (h*60*1000)); 
 	   return t;   
 	},
 	getMongoObjectId: function(){

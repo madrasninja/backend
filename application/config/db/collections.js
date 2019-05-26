@@ -150,12 +150,12 @@ const statusData = [
 
 var fullHouseCleaning_id = common.getMongoObjectId();
 const service_typeData = [
-   { _id : fullHouseCleaning_id, name : "Full House cleaning", amount: '20.00' },
-   { _id : common.getMongoObjectId(), name : "Kitchen Cleaning", parent : [ fullHouseCleaning_id ], amount: '20.00' },
-   { _id : common.getMongoObjectId(), name : "Bathroom Cleaning", parent : [ fullHouseCleaning_id ], amount: '20.00' },
-   { _id : common.getMongoObjectId(), name : "Carpet Cleaning", parent : [ fullHouseCleaning_id ], amount: '20.00' },
-   { _id : common.getMongoObjectId(), name : "Sofa Cleaning", parent : [ fullHouseCleaning_id ], amount: '20.00' },
-   { _id : common.getMongoObjectId(), name : "Marble Polishing", parent : [ ], amount: '20.00' }
+   { _id : fullHouseCleaning_id, name : "Full House cleaning", amount: '200.00' },
+   { _id : common.getMongoObjectId(), name : "Kitchen Cleaning", parent : [ fullHouseCleaning_id ], amount: '200.00' },
+   { _id : common.getMongoObjectId(), name : "Bathroom Cleaning", parent : [ fullHouseCleaning_id ], amount: '200.00' },
+   { _id : common.getMongoObjectId(), name : "Carpet Cleaning", parent : [ fullHouseCleaning_id ], amount: '200.00' },
+   { _id : common.getMongoObjectId(), name : "Sofa Cleaning", parent : [ fullHouseCleaning_id ], amount: '200.00' },
+   { _id : common.getMongoObjectId(), name : "Marble Polishing", parent : [ ], amount: '200.00' }
 ];
 
 const localityData = [
