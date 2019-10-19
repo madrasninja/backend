@@ -1,4 +1,8 @@
 var ObjectId = require('mongodb').ObjectId;
+var SMTP = require('../config/SMTPmailConfig.js');
+var multer  = require('multer');
+var path = require('path');
+const fs = require('fs');
 String.prototype.getCharCode = function(){
 	var rt=[];
 	for(var i=0;i<this.length;i++){
@@ -6,6 +10,27 @@ String.prototype.getCharCode = function(){
 	}
 	return rt;
 };
+
+const crypto = require('crypto');
+const algorithm = 'aes-256-cbc';
+const key = crypto.randomBytes(32);
+const iv = crypto.randomBytes(16);
+
+function encrypt(text) {
+ let cipher = crypto.createCipheriv('aes-256-cbc', Buffer.from(key), iv);
+ let encrypted = cipher.update(text);
+ encrypted = Buffer.concat([encrypted, cipher.final()]);
+ return { iv: iv.toString('hex'), encryptedData: encrypted.toString('hex') };
+}
+
+function decrypt(text) {
+ let iv = Buffer.from(text.iv, 'hex');
+ let encryptedText = Buffer.from(text.encryptedData, 'hex');
+ let decipher = crypto.createDecipheriv('aes-256-cbc', Buffer.from(key), iv);
+ let decrypted = decipher.update(encryptedText);
+ decrypted = Buffer.concat([decrypted, decipher.final()]);
+ return decrypted.toString();
+}
 
 var responses = [
 	{
@@ -221,6 +246,8 @@ var responses = [
 ];
 
 module.exports = {
+	encrypt: encrypt,
+	decrypt: decrypt,
 	frontEndUrl: "https://madrasninja.netlify.com/",
 	uniqueid: function() {
 		  function s4() {
@@ -270,6 +297,21 @@ module.exports = {
 		var UserType = [ 1,2,3,4 ];
 		return typeof UserType[ind] == 'undefined' ? UserType : UserType[ind];
 	},
+	sendEMail: function(cfg, cb = () => {}){
+		var smtp = new SMTP(cfg);
+	    smtp.getFile({title: 'contact-form', content: cfg.content ? cfg.content : ''}, (d) => {
+			var mail = {
+			    from: cfg.auth.user,
+			    to: cfg.to,
+			    subject: cfg.subject ? cfg.subject : '' ,
+			    html: d.html
+			};
+			smtp.sendMail(mail, (err, res) => {
+				if (err) {console.log(err);}
+				cb();
+			});
+		});
+	},
 	getResponses(c, data){
 		var rt = {};
 		responses.forEach((d, k) => {
@@ -280,8 +322,59 @@ module.exports = {
 		});
 		return rt;
 	},
+	getCrptoToken: function(n = 16){
+		return crypto.randomBytes(n).toString('hex');
+	},
+	getPasswordHash: function(password){
+		var salt = crypto.randomBytes(16).toString('hex');
+	    return {salt: salt, hash: crypto.pbkdf2Sync(password, salt,  
+	    1000, 64, `sha512`).toString(`hex`)};
+	},
+	validatePassword: function(exist, password){
+
+		if(!exist.salt || !exist.hash)
+			return false;
+
+		var hash = crypto.pbkdf2Sync(password,  
+	    exist.salt, 1000, 64, `sha512`).toString(`hex`); 
+	    return exist.hash === hash;
+	},
 	getCharCode: function(str){
 		return str.getCharCode();
+	},
+	getFileUploadMiddleware: function(cfg = {}){
+		var storage = multer.diskStorage({
+			destination: function (req, file, cb) {
+				var uploadDir = cfg.uploadDir ? cfg.uploadDir : 'tmp/';
+				var dir = './src/uploads/' + uploadDir;
+				if (!fs.existsSync(dir)){
+				    fs.mkdirSync(dir);
+				}
+			    cb(null, dir);
+			},
+			filename: function (req, file, cb) {
+				var fileName = 'dvs_' + common.gToken(15) + '-' + Date.now();
+				if(cfg.fileName)
+					fileName = cfg.fileName + common.gToken(6);
+				if(req.fileName)
+					fileName = req.fileName + common.gToken(6);
+				fileName = fileName + path.extname(file.originalname);
+			    cb(null, fileName);
+			}
+		});
+		var upload = multer({ storage: storage, 
+		limits: { fieldSize: 25 * 1024 * 1024 },
+		fileFilter: function (req, file, cb) {
+		    if(['image/png', 'image/jpg', 'image/jpeg'].indexOf(file.mimetype) != -1){
+		    	cb(null, true);
+		    	return;
+			}else{
+				//req.json(common.getResponses('MNS036', {}));
+				req.fileError = '035';
+				return cb(null, false, new Error('Not an image'));
+			}
+		} });
+		return upload;
 	},
 	seperate: function(data){
 		var $this = this;

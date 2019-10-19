@@ -1,6 +1,6 @@
 var ObjectId = require('mongodb').ObjectId;
 var config = require('../config/index.js');
-var common = require('../public/common.js');
+var common = require('../js/common.js');
 var path = require('path');
 const fs = require('fs');
 

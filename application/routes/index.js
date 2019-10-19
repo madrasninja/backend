@@ -2,7 +2,7 @@
 var Booking = require('./Booking.js');
 var Labour = require('./labour.js');
 var User = require('./user.js');
-var common = require('../public/common.js');
+var common = require('../js/common.js');
 
 
 var multer  = require('multer');

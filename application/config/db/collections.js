@@ -1,4 +1,4 @@
-var common = require('../../public/common.js');
+var common = require('../../js/common.js');
 var collection = {};
 collection.createUserCollection = function(db, cb) {
    db.createCollection("user", {
